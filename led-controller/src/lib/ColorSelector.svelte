@@ -44,7 +44,7 @@
      * Sets the selected color
      * @param colorHex
      */
-    export function setColor(colorHex){
+    export function setColor(colorHex) {
         let hslColor = hexToHsl(colorHex);
         hue = hslColor[0];
         lightness = hslColor[2];
@@ -86,7 +86,13 @@
         <div id="saved-colors-label">SAVED COLORS</div>
         <div id="saved-colors-container">
             {#each favoriteColors as color (color)}
-                <button on:click={() => {setColor(color)}} style="background-color: #{color};" class="color-button"/>
+                <button
+                    on:click={() => {
+                        setColor(color);
+                    }}
+                    style="background-color: #{color};"
+                    class="color-button"
+                />
             {/each}
         </div>
     </div>
@@ -98,22 +104,19 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        box-shadow: -3px -3px 10px #000000aa;
-        padding: 0px;
         padding-top: 20px;
         border-radius: 10px;
-        max-width: 96vw;
+        width: 100%;
     }
     #main-color-display {
-        padding: 0px;
         max-width: 180px;
+        min-width: 12px;
         margin-left: 8%;
-        width: 35%;
+        width: 150px;
         border-radius: 15px;
         background-color: hsl(var(--hue), 100%, var(--lightness));
     }
     #main-container {
-        padding: 0px;
         display: flex;
         flex-direction: row;
         height: auto;
@@ -143,31 +146,31 @@
         width: 95%;
     }
     #saved-colors-bg {
-        background-color: #BABABA;
-        width: calc(100% - 40px);
+        background-color: #bababa;
         padding-top: 10px;
-        border-radius: 0px 0px 15px 15px;
-        min-height: 100px;
+        border-radius: 0px 0px 10px 10px;
+        min-height: 112px;
         padding-inline: 20px;
         overflow-x: hidden;
+        width: 100%;
     }
 
     #saved-colors-label {
         color: #555555;
-        width: max-content;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         letter-spacing: 2.5px;
     }
 
     #saved-colors-container {
         overflow-x: scroll;
-        white-space:nowrap;
+        white-space: nowrap;
         padding-top: 10px;
+        padding-bottom: 18px;
         width: 100%;
         text-align: left;
     }
 
-    .color-button{
+    .color-button {
         height: 50px;
         width: 50px;
         border-radius: 5px;

@@ -20,6 +20,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -44,9 +45,9 @@ h1 {
 #app {
   max-width: 1280px;
   width: 100vw;
-  padding: 0 auto;
-  padding: 2%;
-  text-align: center;
+  height: 100vh;
+  padding: 0 0;
+  place-items: center;
 }
 
 .button {
@@ -60,15 +61,17 @@ h1 {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 .button:hover {
   border-color: #646cff;
 }
+
 .button:focus,
 .button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-.icon-button{
+.icon-button {
   border: 0px solid transparent;
   background-color: transparent;
   padding: 0px;
@@ -81,27 +84,36 @@ h1 {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
 }
 
-.square-w:after{
+.square-w:after {
   content: "";
   display: block;
+  box-sizing: border-box;
   padding-bottom: 100%;
 }
 
-.square-h:after{
+.square-h:after {
   content: "";
   display: block;
+  box-sizing: border-box;
   padding-right: 100%;
 }
 
-.spacer-v{
+.spacer-v {
   height: 100%;
 }
 
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
