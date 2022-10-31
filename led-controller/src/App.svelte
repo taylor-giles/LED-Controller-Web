@@ -1,10 +1,11 @@
 <script>
     import ColorSelector from "./lib/ColorSelector.svelte";
+    import GradientView from "./lib/GradientView.svelte";
     import GradientCreator from "./lib/pages/GradientCreator.svelte";
 </script>
 
 <div id="main">
-  <ColorSelector/>
+  <GradientCreator/>
 </div>
 
 
@@ -14,5 +15,4 @@
     height: 100%;
     padding: 2%;
   }
-
 </style>

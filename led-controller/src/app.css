@@ -101,13 +101,6 @@ h1 {
   padding-bottom: 100%;
 }
 
-.square-h:after {
-  content: "";
-  display: block;
-  box-sizing: border-box;
-  padding-right: 100%;
-}
-
 .spacer-v {
   height: 100%;
 }

@@ -2,7 +2,6 @@
     import IconButton, { Icon } from "@smui/icon-button";
     import Star from "svelte-material-icons/Star.svelte";
     import StarOutline from "svelte-material-icons/StarOutline.svelte";
-    import HorizontalScroller from "svelte-horizontal-scroller";
     import { createEventDispatcher } from "svelte";
     import { hexToHsl, hslToHex } from "../utils";
     import HueSlider from "./HueSlider.svelte";
@@ -13,14 +12,24 @@
     export let buttonText = "Submit";
     export let favoriteColors = [];
 
-    let currentColorHex = hslToHex(hue, 1, lightness);
-    $: currentColorHex = hslToHex(hue, 1, lightness);
-    let isCurrentColorFavorited = favoriteColors.includes(currentColorHex);
-    $: isCurrentColorFavorited = favoriteColors.includes(currentColorHex);
+    let _currentColorHex = "";
+    $: _currentColorHex = hslToHex(hue, 1, lightness);
+    let isCurrentColorFavorited = false;
+    $: isCurrentColorFavorited = favoriteColors.includes(_currentColorHex);
+    let contrastColor="#FFFFFF";
+    $: if(lightness < 0.7){
+        contrastColor = "#FFF";
+    } else {
+        contrastColor="#666"; 
+    }
+
+    // Expose the hex value to the parent, but readonly
+    export let currentColorHex = "";
+    $: currentColorHex = _currentColorHex;
 
     const dispatch = createEventDispatcher();
 
-    //Forward slider change events
+    //Forward slider change events to parent
     function onHueChange(event) {
         dispatch("hueChange", event.detail[1]);
     }
@@ -32,12 +41,12 @@
     function onFavoriteClick() {
         console.log(...favoriteColors);
         if (isCurrentColorFavorited) {
-            favoriteColors.splice(favoriteColors.indexOf(currentColorHex), 1);
+            favoriteColors.splice(favoriteColors.indexOf(_currentColorHex), 1);
         } else {
-            favoriteColors.push(currentColorHex);
+            favoriteColors.push(_currentColorHex);
         }
         favoriteColors = favoriteColors;
-        isCurrentColorFavorited = favoriteColors.includes(currentColorHex);
+        isCurrentColorFavorited = favoriteColors.includes(_currentColorHex);
     }
 
     /**
@@ -56,22 +65,17 @@
         <div
             style="--hue: {hue}; --lightness: {`${lightness * 100}%`};"
             id="main-color-display"
-            class="square-w"
-        />
-        <div id="main-options-container">
-            <div id="main-text-container">
-                <div id="main-text">#{hslToHex(hue, 1, lightness)}</div>
-                <IconButton class="icon-button" on:click={onFavoriteClick}>
-                    {#if isCurrentColorFavorited}
-                        <Star width="25px" height="25px" />
-                    {:else}
-                        <StarOutline width="25px" height="25px" />
-                    {/if}
-                </IconButton>
-            </div>
-
-            <button class="button" on:click>{buttonText}</button>
+        >
+            <div id="main-text">#{_currentColorHex}</div>
         </div>
+        <IconButton class="icon-button" on:click={onFavoriteClick}>
+            {#if isCurrentColorFavorited}
+                <Star width="25px" height="25px" color={contrastColor}/>
+            {:else}
+                <StarOutline width="25px" height="25px" color={contrastColor}/>
+            {/if}
+        </IconButton>
+        <button class="button" on:click>{buttonText}</button>
     </div>
     <div id="slider-container">
         <HueSlider on:change={onHueChange} bind:selectedHue={hue} />
@@ -106,14 +110,12 @@
         justify-content: center;
         padding-top: 20px;
         border-radius: 10px;
+        box-shadow: 0px -10px 20px 0px black;
         width: 100%;
     }
     #main-color-display {
-        max-width: 180px;
-        min-width: 12px;
         margin-left: 8%;
-        width: 150px;
-        border-radius: 15px;
+        border-radius: 5px;
         background-color: hsl(var(--hue), 100%, var(--lightness));
     }
     #main-container {
@@ -125,7 +127,7 @@
     #main-options-container {
         padding: 10px;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: flex-start;
         justify-content: center;
     }
@@ -133,13 +135,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding-bottom: 20px;
+        padding-bottom: 10px;
     }
     #main-text {
         font-family: monospace;
         padding-left: 5px;
         padding-right: 8px;
-        font-size: 20pt;
+        font-size: 14pt;
     }
     #slider-container {
         text-align: center;
@@ -149,7 +151,7 @@
         background-color: #bababa;
         padding-top: 10px;
         border-radius: 0px 0px 10px 10px;
-        min-height: 112px;
+        min-height: 97px;
         padding-inline: 20px;
         overflow-x: hidden;
         width: 100%;
@@ -158,6 +160,7 @@
     #saved-colors-label {
         color: #555555;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 11pt;
         letter-spacing: 2.5px;
     }
 
@@ -171,8 +174,9 @@
     }
 
     .color-button {
-        height: 50px;
-        width: 50px;
+        cursor: pointer;
+        height: 35px;
+        width: 35px;
         border-radius: 5px;
         border: 2px solid transparent;
         margin-right: 10px;
