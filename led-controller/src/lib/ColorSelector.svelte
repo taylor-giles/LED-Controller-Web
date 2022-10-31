@@ -3,7 +3,7 @@
     import Star from "svelte-material-icons/Star.svelte";
     import StarOutline from "svelte-material-icons/StarOutline.svelte";
     import { createEventDispatcher } from "svelte";
-    import { hexToHsl, hslToHex } from "../utils";
+    import { hexToHsl, hslRelativeLuminance, hslToHex } from "../utils";
     import HueSlider from "./HueSlider.svelte";
     import LightnessSlider from "./LightnessSlider.svelte";
 
@@ -17,10 +17,10 @@
     let isCurrentColorFavorited = false;
     $: isCurrentColorFavorited = favoriteColors.includes(_currentColorHex);
     let contrastColor="#FFFFFF";
-    $: if(lightness < 0.7){
-        contrastColor = "#FFF";
+    $: if(hslRelativeLuminance(hue, 1, lightness) > 0.5){
+        contrastColor = "#222";
     } else {
-        contrastColor="#666"; 
+        contrastColor="#EEE"; 
     }
 
     // Expose the hex value to the parent, but readonly
@@ -63,18 +63,19 @@
 <div id="main">
     <div id="main-container">
         <div
-            style="--hue: {hue}; --lightness: {`${lightness * 100}%`};"
+            style="--hue: {hue}; --lightness: {`${lightness * 100}%`}; --contrast-color: {contrastColor}"
             id="main-color-display"
         >
             <div id="main-text">#{_currentColorHex}</div>
+            <IconButton class="icon-button" on:click={onFavoriteClick}>
+                {#if isCurrentColorFavorited}
+                    <Star width="23px" height="23px" color={contrastColor}/>
+                {:else}
+                    <StarOutline width="23px" height="23px" color={contrastColor}/>
+                {/if}
+            </IconButton>
         </div>
-        <IconButton class="icon-button" on:click={onFavoriteClick}>
-            {#if isCurrentColorFavorited}
-                <Star width="25px" height="25px" color={contrastColor}/>
-            {:else}
-                <StarOutline width="25px" height="25px" color={contrastColor}/>
-            {/if}
-        </IconButton>
+        
         <button class="button" on:click>{buttonText}</button>
     </div>
     <div id="slider-container">
@@ -108,19 +109,29 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        padding: 0px;
         padding-top: 20px;
         border-radius: 10px;
         box-shadow: 0px -10px 20px 0px black;
         width: 100%;
     }
     #main-color-display {
-        margin-left: 8%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: max-content;
+        padding: 10px;
         border-radius: 5px;
         background-color: hsl(var(--hue), 100%, var(--lightness));
+        color: var(--contrast-color);
     }
     #main-container {
         display: flex;
         flex-direction: row;
+        justify-content: space-between;
+        align-items: end;
+
+        padding-inline: 25px;
         height: auto;
         width: 100%;
     }
@@ -145,7 +156,7 @@
     }
     #slider-container {
         text-align: center;
-        width: 95%;
+        width: 100%;
     }
     #saved-colors-bg {
         background-color: #bababa;
@@ -180,5 +191,9 @@
         border-radius: 5px;
         border: 2px solid transparent;
         margin-right: 10px;
+    }
+
+    .button {
+        height: max-content;
     }
 </style>
