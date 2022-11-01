@@ -5,11 +5,12 @@
     export let max = 1;
     export let min = 0;
 
-    let initialVal = (selectedLightness - min)/(max-min);
+    let setVal;
+    $: setVal = (selectedLightness - min)/(max-min);
 </script>
 
 <div style="--hue: {hue}; --selectedLightness: {`${selectedLightness * 100}%`}; --maxSat: {`${max*100}%`}" class="slider">
-	<Slider on:change={(event) => {selectedLightness = min + ((max - min) * event.detail[1])}} value={[0, initialVal]} single />
+	<Slider on:change={(event) => {selectedLightness = min + ((max - min) * event.detail[1])}} value={[0, setVal]} single />
 </div>
 
 <style>

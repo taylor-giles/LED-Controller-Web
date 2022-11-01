@@ -1,10 +1,13 @@
 <script>
     import Slider from "./Slider/Slider.svelte";
 	export let selectedHue = 0;
+
+    let setVal = 0;
+    $: setVal = (selectedHue / 360) % 1;
 </script>
 
 <div style="--selectedHue: {selectedHue};" class="slider">
-	<Slider on:change={(event) => {selectedHue = event.detail[1] * 360}} value={[0, 0]} single />
+	<Slider on:change={(event) => {selectedHue = event.detail[1] * 360}} value={[0, setVal]} single />
 </div>
 
 <style>
