@@ -122,7 +122,7 @@
             {:else}
                 {#if currentEffectType != EFFECTS.GRADIENT}
                     <!-- Speed Chooser -->
-                    <div class="effects-options-label">Choose a Speed:</div>
+                    <div class="effects-options-label">Choose a Speed: {chosenSpeed}%</div>
                     <div class="speed-effect-options-container">
                         <div class="speed-selector-container">
                             <div class="speed-selector">
@@ -324,7 +324,6 @@
     #footer-button {
         width: 100%;
         box-shadow: 0px -10px 25px 5px black;
-        background-color: var(--accent);
         font-family: "Courier New", Courier, monospace;
         letter-spacing: 2px;
     }
