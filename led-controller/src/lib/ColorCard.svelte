@@ -12,10 +12,8 @@
 
   let contrastColor = "#EEE";
   $: if (hexRelativeLuminance(hexColor) >= 0.5) {
-    console.log(hexRelativeLuminance(hexColor))
     contrastColor = "#222";
   } else {
-    console.log(hexRelativeLuminance(hexColor))
     contrastColor = "#EEE";
   }
 

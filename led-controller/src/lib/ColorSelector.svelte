@@ -10,12 +10,14 @@
     export let hue = 0;
     export let lightness = 0.5;
     export let buttonText = "Submit";
-    export let favoriteColors = [];
+    export let savedColors = [];
+    export let shadow = "0px -10px 20px 0px black";
+    export let border = "";
 
     let _currentColorHex = "";
     $: _currentColorHex = hslToHex(hue, 1, lightness);
     let isCurrentColorFavorited = false;
-    $: isCurrentColorFavorited = favoriteColors.includes(_currentColorHex);
+    $: isCurrentColorFavorited = savedColors.includes(_currentColorHex);
     let contrastColor="#EEE";
     $: if(hslRelativeLuminance(hue, 1, lightness) >= 0.5){
         contrastColor = "#222";
@@ -39,14 +41,13 @@
 
     //Favorite color
     function onFavoriteClick() {
-        console.log(...favoriteColors);
         if (isCurrentColorFavorited) {
-            favoriteColors.splice(favoriteColors.indexOf(_currentColorHex), 1);
+            savedColors.splice(savedColors.indexOf(_currentColorHex), 1);
         } else {
-            favoriteColors.push(_currentColorHex);
+            savedColors.push(_currentColorHex);
         }
-        favoriteColors = favoriteColors;
-        isCurrentColorFavorited = favoriteColors.includes(_currentColorHex);
+        savedColors = savedColors;
+        isCurrentColorFavorited = savedColors.includes(_currentColorHex);
     }
 
     /**
@@ -60,7 +61,7 @@
     }
 </script>
 
-<div id="main">
+<div style="--shadow: {shadow}; --border: {border}" id="main">
     <div id="main-container">
         <div
             style="--hue: {hue}; --lightness: {`${lightness * 100}%`}; --contrast-color: {contrastColor}"
@@ -90,7 +91,7 @@
     <div id="saved-colors-bg">
         <div id="saved-colors-label">SAVED COLORS</div>
         <div id="saved-colors-container">
-            {#each favoriteColors as color (color)}
+            {#each savedColors as color (color)}
                 <button
                     on:click={() => {
                         setColor(color);
@@ -112,15 +113,17 @@
         padding: 0px;
         padding-top: 20px;
         border-radius: 10px;
-        box-shadow: 0px -10px 20px 0px black;
+        box-shadow: var(--shadow);
         width: 100%;
+        border: var(--border);
     }
     #main-color-display {
         display: flex;
         align-items: center;
         justify-content: center;
-        height: max-content;
-        padding: 10px;
+        height: 100%;
+        padding: 6px;
+        padding-inline: 10px;
         border-radius: 5px;
         background-color: hsl(var(--hue), 100%, var(--lightness));
         color: var(--contrast-color);
@@ -178,9 +181,5 @@
         border-radius: 5px;
         border: 2px solid transparent;
         margin-right: 10px;
-    }
-
-    .button {
-        height: max-content;
     }
 </style>
