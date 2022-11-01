@@ -132,3 +132,7 @@ export function rgbRelativeLuminance(r: number, g: number, b: number): number {
 export function hslRelativeLuminance(h: number, s: number, l: number){
     return(rgbRelativeLuminance(...hslToRgb(h, s, l)));
 }
+
+export function hexRelativeLuminance(hex: string){
+    return rgbRelativeLuminance(...hexToRgb(hex));
+}

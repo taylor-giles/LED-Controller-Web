@@ -16,8 +16,8 @@
     $: _currentColorHex = hslToHex(hue, 1, lightness);
     let isCurrentColorFavorited = false;
     $: isCurrentColorFavorited = favoriteColors.includes(_currentColorHex);
-    let contrastColor="#FFFFFF";
-    $: if(hslRelativeLuminance(hue, 1, lightness) > 0.5){
+    let contrastColor="#EEE";
+    $: if(hslRelativeLuminance(hue, 1, lightness) >= 0.5){
         contrastColor = "#222";
     } else {
         contrastColor="#EEE"; 
@@ -134,19 +134,6 @@
         padding-inline: 25px;
         height: auto;
         width: 100%;
-    }
-    #main-options-container {
-        padding: 10px;
-        display: flex;
-        flex-direction: row;
-        align-items: flex-start;
-        justify-content: center;
-    }
-    #main-text-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding-bottom: 10px;
     }
     #main-text {
         font-family: monospace;
