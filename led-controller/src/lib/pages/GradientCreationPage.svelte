@@ -146,6 +146,7 @@
   input[type="text"]{
     background-color: #FFFFFF08;
     border: 1px solid #FFFFFFD8;
+    color: #f0f0f0;
     border-radius: 3px;
     padding: 2px;
     padding-inline: 5px;

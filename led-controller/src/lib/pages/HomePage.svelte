@@ -215,6 +215,7 @@
     #brightness-slider {
         width: 100%;
         height: 20px;
+        padding-inline: 15px;
         --sliderSecondary: #ffffff66;
         --sliderSelected: #ffffff;
     }
@@ -301,12 +302,12 @@
     .speed-selector {
         --sliderSecondary: #ffffff66;
         --sliderSelected: #eeeeff;
-        padding-inline: 5px;
+        padding-inline: 15px;
     }
     .speed-selector-label-container {
         display: flex;
         justify-content: space-between;
-        padding-inline: 12px;
+        padding-inline: 18px;
     }
     .speed-selector-label {
         font-size: 9pt;
