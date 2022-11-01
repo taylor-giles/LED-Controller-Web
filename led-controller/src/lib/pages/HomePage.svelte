@@ -15,23 +15,37 @@
 
     export let currentEffectType = EFFECTS.CYCLE;
     export let currentBrightness = 100;
-    export let savedColors;
-    export let savedGradients;
-    export let chosenColor;
-    export let chosenColors;
-    export let chosenGradient;
-    export let chosenGradients;
+    export let savedColors = [];
+    export let savedGradients = [];
+    export let chosenColor = "000000";
+    export let chosenGradient = { name: "Not Yet Chosen", colors: ["000000"] };
+    export let chosenSpeed = 100;
+    export let chosenDirection = "Forward";
+
+    let speedSet = 1;
+    $: speedSet = chosenSpeed / 100;
+
+    let brightnessSet = 1;
+    $: brightnessSet = currentBrightness / 100;
 
     function onDeleteGradient(e) {
-        dispatch("deleteGradient", e);
+        dispatch("deleteGradient", e.detail);
     }
 
     function onBrightnessChange(e) {
         dispatch("brightnessChange", Math.round(e.detail[1] * 100));
     }
 
+    function onSpeedChange(e) {
+        chosenSpeed = Math.round(e.detail[1] * 100);
+    }
+
     function setDisplay(e) {
-        dispatch("submit");
+        dispatch("setDisplay");
+    }
+
+    function onNewGradientClick(){
+        dispatch("newGradientClick");
     }
 </script>
 
@@ -42,7 +56,11 @@
         <div id="brightness-container">
             <div id="brightness-label">Brightness: {currentBrightness}%</div>
             <div id="brightness-slider">
-                <Slider on:change={onBrightnessChange} single />
+                <Slider
+                    on:change={onBrightnessChange}
+                    value={[0, brightnessSet]}
+                    single
+                />
             </div>
         </div>
 
@@ -52,7 +70,7 @@
             {#each Object.values(MONOCHROME_EFFECTS) as effect}
                 {#if currentEffectType != effect}
                     <button
-                        class="option-card"
+                        class="effect-type-button"
                         on:click={() => {
                             currentEffectType = effect;
                         }}
@@ -60,7 +78,7 @@
                         {effect.toUpperCase()}
                     </button>
                 {:else}
-                    <button class="option-card selected">
+                    <button class="effect-type-button selected">
                         {effect.toUpperCase()}
                     </button>
                 {/if}
@@ -70,7 +88,7 @@
             {#each Object.values(ADDRESSABLE_EFFECTS) as effect}
                 {#if currentEffectType != effect}
                     <button
-                        class="option-card"
+                        class="effect-type-button"
                         on:click={() => {
                             currentEffectType = effect;
                         }}
@@ -78,7 +96,7 @@
                         {effect.toUpperCase()}
                     </button>
                 {:else}
-                    <button class="option-card selected">
+                    <button class="effect-type-button selected">
                         {effect.toUpperCase()}
                     </button>
                 {/if}
@@ -86,50 +104,86 @@
         </div>
         <!-- Effect Options -->
         <div id="effects-options-container">
-            <!-- Color Chooser -->
             {#if currentEffectType == EFFECTS.COLOR}
+                <!-- Color Chooser -->
                 <div class="color-effect-options-container">
-                    <div class="effects-options-label">Choose a Color:</div>
+                    <div class="effects-options-label color">
+                        Choose a Color:
+                    </div>
                     <ColorSelector
                         bind:savedColors
                         buttonText="Set Display"
                         bind:currentColorHex={chosenColor}
                         on:click={setDisplay}
+                        showButton={false}
                         shadow=""
                     />
                 </div>
-            
-            <!-- Gradient Chooser -->
             {:else}
-                <!-- Speed Chooser -->
                 {#if currentEffectType != EFFECTS.GRADIENT}
-                <div class="effects-options-label">Choose a Speed:</div>
+                    <!-- Speed Chooser -->
+                    <div class="effects-options-label">Choose a Speed:</div>
                     <div class="speed-effect-options-container">
                         <div class="speed-selector-container">
                             <div class="speed-selector">
-                                <Slider single></Slider>
+                                <Slider
+                                    single
+                                    on:change={onSpeedChange}
+                                    value={[0, speedSet]}
+                                />
                             </div>
                             <div class="speed-selector-label-container">
-                                <div class="speed-selector-label">
-                                    Slow
-                                </div>
-                                <div class="speed-selector-label">
-                                    Fast
-                                </div>
+                                <div class="speed-selector-label">Slow</div>
+                                <div class="speed-selector-label">Fast</div>
                             </div>
                         </div>
                     </div>
                 {/if}
+
+                {#if currentEffectType == EFFECTS.WAVE}
+                    <!-- Direction Chooser -->
+                    <div class="effects-options-label">Choose a Direction:</div>
+                    <div class="direction-effect-options-container">
+                        <div class="direction-selector">
+                            <input
+                                type="radio"
+                                class="radio-button direction-selector"
+                                bind:group={chosenDirection}
+                                value="Forward"
+                            /> Forward
+                        </div>
+                        <div class="direction-selector">
+                            <input
+                                type="radio"
+                                class="radio-button direction-selector"
+                                bind:group={chosenDirection}
+                                value="Reverse"
+                            /> Reverse
+                        </div>
+                    </div>
+                {/if}
+
+                <!-- Gradient Chooser -->
                 <div class="gradient-effect-options-container">
                     <div class="effects-options-label">Choose a Gradient:</div>
-                    <div class="gradient-selector">
-                        <GradientSelector bind:gradients={savedGradients} />
+                    <div class="gradient-selector-container">
+                        <div class="gradient-selector">
+                            <GradientSelector
+                                bind:gradients={savedGradients}
+                                bind:chosenGradient
+                                on:delete={onDeleteGradient}
+                            />
+                        </div>
+                        <button on:click={onNewGradientClick} class="button">Add New Gradient</button>
                     </div>
                 </div>
             {/if}
         </div>
-        <div/>
+        <div />
     </div>
+    <button id="footer-button" class="button" on:click={setDisplay}>
+        UPDATE DISPLAY
+    </button>
 </div>
 
 <style>
@@ -146,15 +200,16 @@
         font-size: 20pt;
         text-align: center;
         padding: 10px;
-        margin-inline: 30px;
+        margin-inline: 25px;
         border-bottom: 1px solid var(--accent);
         margin-bottom: 30px;
     }
 
-    #main-content{
+    #main-content {
         display: flex;
         flex-direction: column;
         flex: 1;
+        overflow-y: auto;
     }
 
     #brightness-slider {
@@ -165,7 +220,7 @@
     }
     #brightness-container {
         padding-inline: 5px;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
     }
     #brightness-label {
         padding-inline: 8px;
@@ -178,12 +233,10 @@
     .effects-buttons-container {
         display: flex;
         justify-content: space-around;
-        overflow-x: auto;
-        white-space: nowrap;
         margin-top: 12px;
     }
 
-    .option-card {
+    .effect-type-button {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -200,7 +253,7 @@
         background-color: transparent;
         letter-spacing: 1.5px;
     }
-    .option-card.selected {
+    .effect-type-button.selected {
         background-color: #d0d0d0;
         color: black;
     }
@@ -212,6 +265,9 @@
     .effects-options-label {
         padding-inline: 13px;
     }
+    .effects-options-label.color {
+        margin-bottom: -15px;
+    }
 
     .color-effect-options-container {
         border: 1px solid black;
@@ -222,32 +278,53 @@
     .gradient-effect-options-container {
         display: flex;
         flex-direction: column;
-        flex: 1
-    }
-
-    .gradient-selector {
-        padding-inline: 10px;
         flex: 1;
     }
-
-    .speed-effect-options-container{
-        margin-bottom: 20px;
+    .gradient-selector-container {
+        padding-inline: 13px;
+        padding-top: 5px;
+        padding-bottom: 30px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+    }
+    .gradient-selector{
+        width: 100%;
+        margin-bottom: 10px;
     }
 
-    .speed-selector{
-      --sliderSecondary: #FFFFFF66;
-      --sliderSelected: #EEEEFF;
-      padding-inline: 5px;
+    .speed-effect-options-container {
+        margin-bottom: 40px;
     }
-
-    .speed-selector-label-container{
+    .speed-selector {
+        --sliderSecondary: #ffffff66;
+        --sliderSelected: #eeeeff;
+        padding-inline: 5px;
+    }
+    .speed-selector-label-container {
         display: flex;
         justify-content: space-between;
         padding-inline: 12px;
     }
-
-    .speed-selector-label{
+    .speed-selector-label {
         font-size: 9pt;
     }
 
+    .direction-effect-options-container {
+        display: flex;
+        margin-left: 10px;
+        margin-bottom: 40px;
+    }
+    .direction-selector {
+        padding-right: 20px;
+    }
+
+    #footer-button {
+        width: 100%;
+        box-shadow: 0px -10px 25px 5px black;
+        background-color: var(--accent);
+        font-family: "Courier New", Courier, monospace;
+        letter-spacing: 2px;
+    }
 </style>

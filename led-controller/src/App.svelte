@@ -1,11 +1,6 @@
 <script>
-    import IconButton, { Icon } from "@smui/icon-button";
-    import RightIcon from "svelte-material-icons/ChevronRight.svelte";
-    import ColorSelector from "./lib/ColorSelector.svelte";
-    import GradientSelector from "./lib/GradientSelector.svelte";
-    import GradientCreator from "./lib/pages/GradientCreationPage.svelte";
+    import GradientCreationPage from "./lib/pages/GradientCreationPage.svelte";
     import HomePage from "./lib/pages/HomePage.svelte";
-    import Slider from "./lib/Slider/Slider.svelte";
     import { EFFECTS } from "./types/effectTypes";
 
     const PAGES = {
@@ -20,6 +15,7 @@
         "00FFFF",
         "0000FF",
         "FF00FF",
+        "FFFFFF",
     ];
 
     let savedGradients = [
@@ -137,29 +133,54 @@
 
     let currentPage = PAGES.HOME;
     let currentEffectType = EFFECTS.COLOR;
-    let currentBrightness = 100;
+    let currentBrightness;
 
     let chosenColor;
     let chosenGradient;
-    let chosenColors;
-    let chosenGradients;
+    let chosenSpeed;
+    let chosenDirection;
 
-    
-    function setDisplay(){
-        console.log(currentEffectType)
+    let newGradientName = "Untitled";
+    let newGradientColors = [];
+
+    function setDisplay() {
+        console.log(
+            currentEffectType,
+            currentBrightness,
+            chosenColor,
+            chosenGradient,
+            chosenSpeed,
+            chosenDirection
+        );
     }
 
     function onBrightnessChange(e) {
         currentBrightness = e.detail;
     }
 
-    function onDeleteGradient(e){
+    function onDeleteGradient(e) {
         let gradient = e.detail;
         savedGradients.splice(savedGradients.indexOf(gradient), 1);
         savedGradients = savedGradients;
     }
 
-    function onGradientSave() {}
+    function onNewGradientClick(e) {
+        currentPage = PAGES.GRADIENT_CREATE;
+        newGradientName = "Untitled";
+        newGradientColors = [];
+    }
+
+    function onGradientSave() {
+        savedGradients = [
+            ...savedGradients,
+            { name: newGradientName, colors: newGradientColors },
+        ];
+        currentPage = PAGES.HOME;
+    }
+
+    function onGradientCreationCancel() {
+        currentPage = PAGES.HOME;
+    }
 </script>
 
 <div id="main">
@@ -169,16 +190,23 @@
             bind:savedGradients
             bind:currentEffectType
             bind:currentBrightness
-            bind:chosenColors
-            bind:chosenGradients
             bind:chosenColor
             bind:chosenGradient
+            bind:chosenSpeed
+            bind:chosenDirection
             on:deleteGradient={onDeleteGradient}
             on:brightnessChange={onBrightnessChange}
-            on:submit={setDisplay}
+            on:newGradientClick={onNewGradientClick}
+            on:setDisplay={setDisplay}
         />
     {:else}
-        <GradientSelector bind:gradients={savedGradients} on:delete={onDeleteGradient}/>
+        <GradientCreationPage
+            bind:savedColors
+            bind:colors={newGradientColors}
+            bind:name={newGradientName}
+            on:save={onGradientSave}
+            on:cancel={onGradientCreationCancel}
+        />
     {/if}
 </div>
 
