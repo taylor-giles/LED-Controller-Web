@@ -94,8 +94,6 @@ export function rgbToHsl(r: number, g: number, b: number): [number, number, numb
     if (delta != 0) {
         sat = (delta / (1 - Math.abs((2 * light) - 1)));
     }
-
-    console.log(hue)
     return [hue, sat, light];
 }
 
