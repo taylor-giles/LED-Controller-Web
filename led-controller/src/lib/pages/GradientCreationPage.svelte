@@ -7,9 +7,10 @@
 
   const dispatch = createEventDispatcher();
 
-  let colors = [];
   let currentColorHex;
   export let savedColors = [];
+  export let name = "Untitled";
+  export let colors = [];
 
   function addSelectedColor() {
     colors = [...colors, currentColorHex];
@@ -38,18 +39,31 @@
     }
   }
 
-  function onSave(e) {
-    dispatch("save", e);
+  function onCancel(){
+    dispatch("cancel")
+  }
+
+  function onSave() {
+    dispatch("save", );
   }
 </script>
 
 <div id="main">
-  <div id="preview-label">Preview:</div>
-  <div id="header-container">
+  <div id="header">
+    <div id="name-container">
+      Gradient Name: 
+      <input id="name-input" type="text" bind:value={name}>
+    </div>
+    
+    <button class="button" on:click={onCancel}> Cancel </button>
+    <button class="button" on:click={onSave}> Save </button>
+  </div>
+  
+  <div id="preview-container">
+    <div id="preview-label">Preview:</div>
     <div id="preview">
       <GradientView height="45px" bind:colors />
     </div>
-    <button class="button" on:click={onSave}> Save </button>
   </div>
   <div id="colors-container">
     {#each colors as color, index}
@@ -79,10 +93,26 @@
     height: 100%;
   }
 
-  #header-container {
+  #name-container{
     display: flex;
+    flex-direction: column;
+    font-size: 10pt;
+    flex: 1;
+  }
+
+  #header{
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding-inline: 10px;
+    padding-bottom: 15px;
+    border-bottom: 1px #a0a0a0 solid;
+  }
+
+  #preview-container {
     width: 100%;
     padding: 5px;
+    padding-top: 15px;
     height: max-content;
   }
 
@@ -103,5 +133,21 @@
     padding: 5px;
     overflow-y: auto;
     white-space: nowrap;
+  }
+
+  .button{
+    font-size: 11pt;
+    padding: 8px;
+    padding-inline: 10px;
+    height: max-content;
+    margin-left: 8px;
+  }
+
+  input[type="text"]{
+    background-color: #FFFFFF08;
+    border: 1px solid #FFFFFFD8;
+    border-radius: 3px;
+    padding: 2px;
+    padding-inline: 5px;
   }
 </style>
