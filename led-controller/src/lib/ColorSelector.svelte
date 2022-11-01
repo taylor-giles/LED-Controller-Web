@@ -13,6 +13,8 @@
     export let savedColors = [];
     export let shadow = "0px -10px 20px 0px black";
     export let border = "";
+    export let showButton = true;
+    let displayWidth = showButton ? "auto" : "100%"
 
     let _currentColorHex = "";
     $: _currentColorHex = hslToHex(hue, 1, lightness);
@@ -64,7 +66,7 @@
 <div style="--shadow: {shadow}; --border: {border}" id="main">
     <div id="main-container">
         <div
-            style="--hue: {hue}; --lightness: {`${lightness * 100}%`}; --contrast-color: {contrastColor}"
+            style="--hue: {hue}; --lightness: {`${lightness * 100}%`}; --contrast-color: {contrastColor}; --display-width: {displayWidth};"
             id="main-color-display"
         >
             <div id="main-text">#{_currentColorHex}</div>
@@ -77,7 +79,9 @@
             </IconButton>
         </div>
         
-        <button class="button" on:click>{buttonText}</button>
+        {#if showButton}
+            <button class="button" on:click>{buttonText}</button>
+        {/if}
     </div>
     <div id="slider-container">
         <HueSlider on:change={onHueChange} bind:selectedHue={hue} />
@@ -127,6 +131,7 @@
         border-radius: 5px;
         background-color: hsl(var(--hue), 100%, var(--lightness));
         color: var(--contrast-color);
+        width: var(--display-width);
     }
     #main-container {
         display: flex;
