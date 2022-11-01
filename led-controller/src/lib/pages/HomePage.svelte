@@ -252,6 +252,7 @@
         border-radius: 20px;
         background-color: transparent;
         letter-spacing: 1.5px;
+        color: #dedede;
     }
     .effect-type-button.selected {
         background-color: #d0d0d0;
