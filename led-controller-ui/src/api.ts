@@ -7,7 +7,6 @@ const apiCaller = axios.create({
 
 export async function getNewId(): Promise<string>{
     return apiCaller.get('generate').then((res) => {
-        console.log(res);
         return res.data._id;
     }).catch((error) => "ERROR")
 }

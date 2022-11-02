@@ -14,7 +14,7 @@
 
     function onRegisterClick() {
         isHandlingRegisterRequest = true;
-        getNewId().then((res) => console.log(res))
+        getNewId().then((newId) => generatedId = newId)
     }
 
     function onGuestClick() {
