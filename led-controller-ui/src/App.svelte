@@ -1,41 +1,26 @@
 <script>
     import GradientCreationPage from "./lib/pages/GradientCreationPage.svelte";
     import HomePage from "./lib/pages/HomePage.svelte";
+    import LandingPage from "./lib/pages/LandingPage.svelte";
     import { EFFECTS } from "./types/effectTypes";
+
+    const params = new URLSearchParams(window.location.search);
 
     const PAGES = {
         HOME: "Home",
+        LANDING: "Landing Page",
         GRADIENT_CREATE: "Gradient Creation",
     };
 
-    let savedColors = [
-        "FF0000",
-        "FFFF00",
-        "00FF00",
-        "00FFFF",
-        "0000FF",
-        "FF00FF",
-        "FFFFFF",
-    ];
-
-    let savedGradients = [
-        {
-            name: "Rainbow",
-            colors: [
-                "FF0000",
-                "FFFF00",
-                "00FF00",
-                "00FFFF",
-                "0000FF",
-                "FF00FF",
-            ],
-        },
-    ];
+    let savedColors = [];
+    let savedGradients = [];
 
     let currentPage = PAGES.HOME;
+    if(!(params.get('id'))){
+        currentPage = PAGES.LANDING;
+    }
     let currentEffectType = EFFECTS.COLOR;
     let currentBrightness;
-
     let chosenColor;
     let chosenGradient;
     let chosenSpeed;
@@ -100,7 +85,7 @@
             on:newGradientClick={onNewGradientClick}
             on:setDisplay={setDisplay}
         />
-    {:else}
+    {:else if currentPage == PAGES.GRADIENT_CREATE}
         <GradientCreationPage
             bind:savedColors
             bind:colors={newGradientColors}
@@ -108,6 +93,8 @@
             on:save={onGradientSave}
             on:cancel={onGradientCreationCancel}
         />
+    {:else if currentPage == PAGES.LANDING}
+        <LandingPage/>
     {/if}
 </div>
 
