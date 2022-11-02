@@ -1,5 +1,5 @@
 {
-  "name": "led-controller",
+  "name": "led-controller-ui",
   "private": true,
   "version": "0.0.0",
   "type": "module",
