@@ -22,6 +22,13 @@ export async function getConfig(id: string): Promise<IDevice | null>{
     }).catch((error) => null)
 }
 
+//Returns the ID of the guest device
+export async function getGuestId(): Promise<string> {
+    return apiCaller.get(`getGuest`).then((res) => {
+        return res.data._id
+    }).catch((error) => "ERROR")
+}
+
 //SETTERS - Return error on failure, null on success
 export async function setColors(id: string, colors: string[]): Promise<any | null>{
     return apiCaller.post(`setColors/${id}`, colors).then((res) => {

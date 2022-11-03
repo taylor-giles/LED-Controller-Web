@@ -4,7 +4,7 @@
     import ColorSelector from "../ColorSelector.svelte";
     import GradientView from "../GradientView.svelte";
     import { createEventDispatcher } from "svelte";
-    import {getNewId} from "../../api";
+    import {getGuestId, getNewId} from "../../api";
 
     const dispatch = createEventDispatcher();
 
@@ -18,9 +18,11 @@
     }
 
     function onGuestClick() {
-        let newUrl = new URL(window.location.href);
-        newUrl.searchParams.append('id', "guest");
-        location.assign(newUrl)
+        getGuestId().then((guestId) => {
+            let newUrl = new URL(window.location.href);
+            newUrl.searchParams.append('id', guestId);
+            location.assign(newUrl)
+        });
     }
 
     function onLoginClick() {
