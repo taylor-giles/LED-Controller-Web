@@ -1,7 +1,8 @@
 import * as express from "express";
-import { generateNewDisplay, ensureId, setDisplay, setSavedColors, setSavedGradients, getConfig } from "./controller";
+import { generateNewDisplay, ensureId, setDisplay, setSavedColors, setSavedGradients, getConfig, getGuest } from "./controller";
 const router = express.Router();
 
+router.get('/getGuest', getGuest);
 router.get('/generate', generateNewDisplay)
 router.post('/setDisplay/:id', ensureId, setDisplay)
 router.post('/setGradients/:id', ensureId, setSavedGradients)
