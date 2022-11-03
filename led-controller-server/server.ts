@@ -1,5 +1,5 @@
 import express from 'express';
-import ws from 'ws';
+import { WebSocketServer } from 'ws';
 import router from './router';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -9,7 +9,7 @@ const app = express();
 const port = process.env.PORT ?? 5000
 
 app.use(express.json());
-app.listen(port, ()=>{
+app.listen(port, () => {
     console.log(`App listening on port ${port}`)
 });
 app.use('/', router)
@@ -22,3 +22,13 @@ mongoose.connect(DB_URI).catch(
 const db = mongoose.connection
 db.on('error', console.error.bind(console, 'MongoDB connection error:'))
 
+
+// Websocket
+const wss = new WebSocketServer({ port: 8080 });
+
+wss.on('connection', function connection(ws) {
+    ws.on('message', function message(data) {
+        ws.send(data);
+        console.log('received: %s', data);
+    });
+});
