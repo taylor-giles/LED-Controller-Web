@@ -3,6 +3,7 @@ import { WebSocketServer } from 'ws';
 import router from './router';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { handleWSConnection } from './renderer';
 dotenv.config();
 
 const app = express();
@@ -24,11 +25,6 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'))
 
 
 // Websocket
-const wss = new WebSocketServer({ port: 8080 });
+const wsServer = new WebSocketServer({ port: 8080 });
 
-wss.on('connection', function connection(ws) {
-    ws.on('message', function message(data) {
-        ws.send(data);
-        console.log('received: %s', data);
-    });
-});
+wsServer.on('connection', handleWSConnection);
