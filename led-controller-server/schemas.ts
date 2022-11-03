@@ -25,7 +25,8 @@ interface IDisplay {
 interface IDevice {
     colors: string[],
     gradients: IGradient[],
-    currentDisplay: IDisplay
+    currentDisplay: IDisplay,
+    isGuest?: Boolean
 }
 
 const gradientSchema = new mongoose.Schema<IGradient>({
@@ -45,9 +46,11 @@ const displaySchema = new mongoose.Schema<IDisplay>({
 const deviceSchema = new mongoose.Schema<IDevice>({
     colors: {type: [String], required: true},
     gradients: {type: [gradientSchema], required: true},
-    currentDisplay: {type: displaySchema, required: true}
+    currentDisplay: {type: displaySchema, required: true},
+    isGuest: {type: Boolean}
 });
 
 const Device = mongoose.model<IDevice>('Device', deviceSchema);
 
-export { DisplayType, IDevice, IGradient, IDisplay, Device };
+export type { IDevice, IGradient, IDisplay };
+export { DisplayType, Device };

@@ -1,25 +1,27 @@
 <script>
+    import { DisplayType } from "../../led-controller-server/schemas";
+    import { getConfig, setColors, setDisplay, setGradients } from "./api";
+    import ErrorPage from "./lib/pages/ErrorPage.svelte";
     import GradientCreationPage from "./lib/pages/GradientCreationPage.svelte";
     import HomePage from "./lib/pages/HomePage.svelte";
     import LandingPage from "./lib/pages/LandingPage.svelte";
-    import { EFFECTS } from "./types/effectTypes";
 
     const params = new URLSearchParams(window.location.search);
+    let deviceId = params.get("id");
+    console.log(deviceId);
 
     const PAGES = {
         HOME: "Home",
         LANDING: "Landing Page",
         GRADIENT_CREATE: "Gradient Creation",
+        ERROR: "Error Page",
     };
 
     let savedColors = [];
     let savedGradients = [];
 
-    let currentPage = PAGES.HOME;
-    if(!(params.get('id'))){
-        currentPage = PAGES.LANDING;
-    }
-    let currentEffectType = EFFECTS.COLOR;
+    let currentPage = deviceId ? PAGES.HOME : PAGES.LANDING;
+    let currentEffectType;
     let currentBrightness;
     let chosenColor;
     let chosenGradient;
@@ -29,19 +31,43 @@
     let newGradientName = "Untitled";
     let newGradientColors = [];
 
-    function setDisplay() {
-        console.log(
-            currentEffectType,
-            currentBrightness,
-            chosenColor,
-            chosenGradient,
-            chosenSpeed,
-            chosenDirection
-        );
+    console.log(deviceId)
+
+    //Get the current state
+    if (deviceId) {
+        getConfig(deviceId).then((config) => {
+            if (!config) {
+                currentPage = PAGES.ERROR;
+                return;
+            }
+            savedColors = config.colors;
+            savedGradients = config.gradients;
+            currentEffectType = config.currentDisplay.type;
+            currentBrightness = config.currentDisplay.brightness;
+            chosenColor = config.currentDisplay.color;
+            chosenGradient = config.currentDisplay.gradient;
+            chosenSpeed = config.currentDisplay.speed;
+            chosenDirection = config.currentDisplay.isForward ? "Forward" : "Reverse";
+        });
+    }
+
+    $: if (deviceId) setColors(deviceId, savedColors);
+    $: if (deviceId) setGradients(deviceId, savedGradients);
+
+    function updateDisplay() {
+        setDisplay(deviceId, {
+            type: currentEffectType,
+            brightness: currentBrightness,
+            color: chosenColor,
+            gradient: chosenGradient,
+            speed: chosenSpeed,
+            isForward: chosenDirection == "Forward",
+        });
     }
 
     function onBrightnessChange(e) {
         currentBrightness = e.detail;
+        updateDisplay();
     }
 
     function onDeleteGradient(e) {
@@ -83,7 +109,7 @@
             on:deleteGradient={onDeleteGradient}
             on:brightnessChange={onBrightnessChange}
             on:newGradientClick={onNewGradientClick}
-            on:setDisplay={setDisplay}
+            on:setDisplay={updateDisplay}
         />
     {:else if currentPage == PAGES.GRADIENT_CREATE}
         <GradientCreationPage
@@ -94,7 +120,9 @@
             on:cancel={onGradientCreationCancel}
         />
     {:else if currentPage == PAGES.LANDING}
-        <LandingPage/>
+        <LandingPage />
+    {:else if currentPage == PAGES.ERROR}
+        <ErrorPage deviceId={deviceId}/>
     {/if}
 </div>
 

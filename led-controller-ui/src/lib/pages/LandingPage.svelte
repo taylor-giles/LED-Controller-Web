@@ -175,6 +175,10 @@
         margin-left: 5px;
     }
 
+    #instructions{
+        margin-bottom: 20px;
+    }
+
     .button{
         font-size: 11pt;
         padding-inline: 10px;

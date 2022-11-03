@@ -1,15 +1,9 @@
-export const MONOCHROME_EFFECTS = {
-    COLOR: "Color",
-    CYCLE: "Cycle",
-    COLOR_STROBE: "Strobe"
-}
+import { DisplayType } from "../../../led-controller-server/schemas";
 
-export const ADDRESSABLE_EFFECTS = {
-    GRADIENT: "Gradient",
-    WAVE: "Gradient Wave",
-}
+export const MONOCHROME_EFFECTS = [DisplayType.COLOR, DisplayType.CYCLE, DisplayType.COLOR_STROBE]
+export const ADDRESSABLE_EFFECTS = [DisplayType.GRADIENT, DisplayType.WAVE];
 
-export const EFFECTS = {
+export const EFFECTS = [
     ...MONOCHROME_EFFECTS,
     ...ADDRESSABLE_EFFECTS
-};
+];

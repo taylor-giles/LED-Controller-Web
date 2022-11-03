@@ -2,6 +2,7 @@
     import IconButton, { Icon } from "@smui/icon-button";
     import { createEventDispatcher } from "svelte";
     import RightIcon from "svelte-material-icons/ChevronRight.svelte";
+    import { DisplayType } from "../../../../led-controller-server/schemas";
     import {
         MONOCHROME_EFFECTS,
         ADDRESSABLE_EFFECTS,
@@ -13,7 +14,7 @@
 
     const dispatch = createEventDispatcher();
 
-    export let currentEffectType = EFFECTS.CYCLE;
+    export let currentEffectType = DisplayType.COLOR;
     export let currentBrightness = 100;
     export let savedColors = [];
     export let savedGradients = [];
@@ -67,7 +68,7 @@
         <!-- Effect Buttons -->
         <div class="effect-label">Choose an Effect:</div>
         <div class="effects-buttons-container">
-            {#each Object.values(MONOCHROME_EFFECTS) as effect}
+            {#each MONOCHROME_EFFECTS as effect}
                 {#if currentEffectType != effect}
                     <button
                         class="effect-type-button"
@@ -85,7 +86,7 @@
             {/each}
         </div>
         <div class="effects-buttons-container">
-            {#each Object.values(ADDRESSABLE_EFFECTS) as effect}
+            {#each ADDRESSABLE_EFFECTS as effect}
                 {#if currentEffectType != effect}
                     <button
                         class="effect-type-button"
@@ -104,7 +105,7 @@
         </div>
         <!-- Effect Options -->
         <div id="effects-options-container">
-            {#if currentEffectType == EFFECTS.COLOR}
+            {#if currentEffectType == DisplayType.COLOR}
                 <!-- Color Chooser -->
                 <div class="color-effect-options-container">
                     <div class="effects-options-label color">
@@ -120,7 +121,7 @@
                     />
                 </div>
             {:else}
-                {#if currentEffectType != EFFECTS.GRADIENT}
+                {#if currentEffectType != DisplayType.GRADIENT}
                     <!-- Speed Chooser -->
                     <div class="effects-options-label">Choose a Speed: {chosenSpeed}%</div>
                     <div class="speed-effect-options-container">
@@ -140,7 +141,7 @@
                     </div>
                 {/if}
 
-                {#if currentEffectType == EFFECTS.WAVE}
+                {#if currentEffectType == DisplayType.WAVE}
                     <!-- Direction Chooser -->
                     <div class="effects-options-label">Choose a Direction:</div>
                     <div class="direction-effect-options-container">
