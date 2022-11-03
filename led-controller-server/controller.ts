@@ -12,10 +12,11 @@ export async function ensureId(req: Request, res: Response, next: NextFunction) 
 
 export async function setDisplay(req: Request, res: Response) {
     const id = req.params.id;
-    console.log(req.body);
+    console.log(`[${Date.now()}] Setting display for ${id}`);
 
     Device.findOneAndUpdate({ _id: id }, { currentDisplay: req.body }, { returnOriginal: false }, (error, result) => {
         if (error) {
+            console.log(`[${Date.now()}] Failure setting display`, error)
             res.status(400).json({ error: error, result: result })
         } else {
             res.status(200).json(result)
@@ -25,10 +26,11 @@ export async function setDisplay(req: Request, res: Response) {
 
 export async function setSavedColors(req: Request, res: Response) {
     const id = req.params.id;
-    console.log(req.body);
+    console.log(`[${Date.now()}] Setting colors for ${id}`);
 
     Device.findOneAndUpdate({ _id: id }, { colors: req.body }, { returnOriginal: false }, (error, result) => {
         if (error) {
+            console.log(`[${Date.now()}] Failure setting colors`, error)
             res.status(400).json({ error: error, result: result })
         } else {
             res.status(200).json(result)
@@ -38,10 +40,11 @@ export async function setSavedColors(req: Request, res: Response) {
 
 export async function setSavedGradients(req: Request, res: Response) {
     const id = req.params.id;
-    console.log(req.body);
+    console.log(`[${Date.now()}] Setting gradients for ${id}`);
 
     Device.findOneAndUpdate({ _id: id }, { gradients: req.body }, { returnOriginal: false }, (error, result) => {
         if (error) {
+            console.log(`[${Date.now()}] Failure setting gradients`, error)
             res.status(400).json({ error: error, result: result })
         } else {
             res.status(200).json(result)
@@ -51,9 +54,11 @@ export async function setSavedGradients(req: Request, res: Response) {
 
 export async function getConfig(req: Request, res: Response) {
     const id = req.params.id;
+    console.log(`[${Date.now()}] Sending config for ${id}`);
 
     Device.findOne({ _id: id }, null, null, (error, result) => {
         if (error) {
+            console.log(`[${Date.now()}] Failure getting config`, error)
             res.status(400).json({ error: error, result: result })
         } else {
             res.status(200).json(result)
@@ -81,25 +86,28 @@ export async function generateNewDisplay(req: Request, res: Response) {
     const newDevice = getNewDefaultDevice();
     newDevice.save((error, result) => {
         if (error) {
+            console.log(`[${Date.now()}] Failure generating new device`, error)
             res.status(500).json({ error: error, result: result });
         } else {
+            console.log(`[${Date.now()}] Generated new device: ${result._id}`);
             res.status(200).json(result);
         }
     });
 }
 
 export async function getGuest(req: Request, res: Response) {
+    console.log(`[${Date.now()}] Guest device requested`);
     Device.findOne({ guest: true }, null, null, (error, result) => {
         if (error) {
             res.status(500).json({error: error, result: result});
         } else if (!result) {
-            
                 //If there is no guest device, make one
+                console.log(`[${Date.now()}] Generating new guest device`);
                 const newGuest = getNewDefaultDevice();
                 newGuest.set("isGuest", true);
-                console.log(newGuest)
                 newGuest.save((error, result) => {
                     if (error) {
+                        console.log(`[${Date.now()}] Failure generating new guest device`, error)
                         res.status(500).json({ error: error, result: result });
                     } else {
                         res.status(200).json(result)
