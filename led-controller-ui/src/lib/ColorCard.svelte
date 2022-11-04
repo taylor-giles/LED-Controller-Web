@@ -3,7 +3,7 @@
   import DeleteIcon from "svelte-material-icons/Delete.svelte";
   import UpArrowIcon from "svelte-material-icons/ArrowUpBold.svelte";
   import DownArrowIcon from "svelte-material-icons/ArrowDownBold.svelte";
-  import { hexRelativeLuminance } from "../utils";
+  import { hexRelativeLuminance } from "../../../utils";
     import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();

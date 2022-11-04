@@ -1,40 +1,41 @@
 <script>
-    import { hslToHex } from "../../utils";
+    import { hslToHex } from "../../../../utils";
     import ColorCard from "../ColorCard.svelte";
     import ColorSelector from "../ColorSelector.svelte";
     import GradientView from "../GradientView.svelte";
     import { createEventDispatcher } from "svelte";
-    import {getGuestId, getNewId} from "../../api";
+    import { getGuestId, getNewId } from "../../api";
 
     const dispatch = createEventDispatcher();
 
     let enteredId = "";
     let isHandlingRegisterRequest = false;
     let generatedId = "Loading...";
+    let numPixels = 1;
 
     function onRegisterClick() {
         isHandlingRegisterRequest = true;
-        getNewId().then((newId) => generatedId = newId)
+        getNewId(numPixels).then((newId) => (generatedId = newId));
     }
 
     function onGuestClick() {
         getGuestId().then((guestId) => {
             let newUrl = new URL(window.location.href);
-            newUrl.searchParams.append('id', guestId);
-            location.assign(newUrl)
+            newUrl.searchParams.append("id", guestId);
+            location.assign(newUrl);
         });
     }
 
     function onLoginClick() {
         let newUrl = new URL(window.location.href);
-        newUrl.searchParams.append('id', enteredId);
-        location.assign(newUrl)
+        newUrl.searchParams.append("id", enteredId);
+        location.assign(newUrl);
     }
 
-    function onNewLoginClick(){
+    function onNewLoginClick() {
         let newUrl = new URL(window.location.href);
-        newUrl.searchParams.append('id', generatedId);
-        location.assign(newUrl)
+        newUrl.searchParams.append("id", generatedId);
+        location.assign(newUrl);
     }
 </script>
 
@@ -45,7 +46,7 @@
         <div class="main-content">
             <ul>
                 <li>
-                    To register a new device, press the "Register New Device"
+                    To register a new device, enter the number of pixels in your display and press the "Register New Device"
                     button below.
                 </li>
                 <li>
@@ -53,33 +54,52 @@
                     below and press "Log In".
                 </li>
                 <li>
-                    If you're just newUrl to have a look around, thanks for
+                    If you're just here to have a look around, thanks for
                     dropping by! Use the "Continue as Guest" button to proceed
                     to the main site.
                 </li>
             </ul>
         </div>
-        <div id="login-container">
-            Enter Device ID:
-            <div id="login-input-container">
-                <input type="text" id="id-input" bind:value={enteredId} />
-                <button class="button" on:click={onLoginClick}>Log In</button>
+
+        <div id="options-container">
+            <div id="register-container">
+                Enter Number of Lights in Display:
+                <div id="register-input-container">
+                    <input
+                        type="number"
+                        id="register-input"
+                        min="1"
+                        max="1000"
+                        bind:value={numPixels}
+                    />
+                    <button class="button" on:click={onRegisterClick}
+                        >Register New Device</button
+                    >
+                </div>
             </div>
-        </div>
-        <div id="button-container">
-            <button class="button" on:click={onRegisterClick}
-                >Register New Device</button
-            >
-            <button class="button" on:click={onGuestClick}
-                >Continue as Guest</button
-            >
+            - OR -
+            <div id="login-container">
+                Enter Device ID:
+                <div id="login-input-container">
+                    <input type="text" id="id-input" bind:value={enteredId} />
+                    <button class="button" on:click={onLoginClick}
+                        >Log In</button
+                    >
+                </div>
+            </div>
+            - OR -
+            <div id="button-container">
+                <button class="button" on:click={onGuestClick}
+                    >Continue as Guest</button
+                >
+            </div>
         </div>
     {:else}
         <div class="main-content">
             <div id="subtitle">
                 Thank you for choosing my LED controller! :)
             </div>
-            
+
             <div id="id-display-container">
                 Your new device ID is:
                 <div id="id-display">
@@ -88,7 +108,8 @@
             </div>
 
             <div id="instructions">
-                Use this ID when connecting your controller to the stream, and when logging into this app.
+                Use this ID when connecting your controller to the stream, and
+                when logging into this app.
             </div>
 
             <button class="button" on:click={onNewLoginClick}>
@@ -115,7 +136,7 @@
         border-bottom: 1px solid var(--accent);
         margin-bottom: 30px;
     }
-    #subtitle{
+    #subtitle {
         margin-top: 10px;
     }
     #banner {
@@ -141,6 +162,7 @@
         display: flex;
         flex-direction: column;
         padding: 20px;
+        width: 100%;
     }
 
     #login-input-container {
@@ -148,23 +170,58 @@
         align-items: center;
     }
 
+    #register-container {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        width: 100%;
+    }
+
+    #register-input-container {
+        display: flex;
+        align-items: center;
+    }
+
+    #options-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
     input[type="text"] {
         background-color: #ffffff08;
         border: 1px solid #ffffffd8;
         color: #f0f0f0;
         border-radius: 3px;
-        padding: 2px;
+        padding: 5px;
         padding-inline: 5px;
         height: 100%;
         flex: 1;
         margin-right: 10px;
     }
 
-    ul{
+    input[type="number"] {
+        background-color: #ffffff08;
+        border: 1px solid #ffffffd8;
+        color: #f0f0f0;
+        border-radius: 3px;
+        padding: 5px;
+        padding-inline: 5px;
+        height: 100%;
+        flex: 1;
+        margin-right: 10px;
+    }
+
+    ul {
         padding-left: 18px;
     }
 
-    #id-display-container{
+    li {
+        margin-bottom: 10px;
+    }
+
+    #id-display-container {
         margin-top: 30px;
         margin-bottom: 40px;
         display: flex;
@@ -172,16 +229,16 @@
         align-items: center;
     }
 
-    #id-display{
+    #id-display {
         color: var(--accent);
         margin-left: 5px;
     }
 
-    #instructions{
+    #instructions {
         margin-bottom: 20px;
     }
 
-    .button{
+    .button {
         font-size: 11pt;
         padding-inline: 10px;
     }

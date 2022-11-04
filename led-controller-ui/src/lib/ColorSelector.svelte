@@ -3,7 +3,7 @@
     import Star from "svelte-material-icons/Star.svelte";
     import StarOutline from "svelte-material-icons/StarOutline.svelte";
     import { createEventDispatcher } from "svelte";
-    import { hexToHsl, hslRelativeLuminance, hslToHex } from "../utils";
+    import { hexToHsl, hslRelativeLuminance, hslToHex } from "../../../utils";
     import HueSlider from "./HueSlider.svelte";
     import LightnessSlider from "./LightnessSlider.svelte";
 
