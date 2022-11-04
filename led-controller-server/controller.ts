@@ -1,6 +1,7 @@
 import * as mongoose from "mongoose";
 import { Device, IDisplay } from "./schemas";
 import { Request, Response, NextFunction } from "express";
+import { renderer } from "./server";
 
 export async function ensureId(req: Request, res: Response, next: NextFunction) {
     if (!req || !req.params || !req.params.id) {
@@ -62,13 +63,14 @@ export async function getConfig(req: Request, res: Response) {
             res.status(400).json({ error: error, result: result })
         } else {
             res.status(200).json(result)
+            renderer.updateDisplay(id);
         }
     });
 }
 
 
 
-function getNewDefaultDevice() {
+function getNewDefaultDevice(numPixels = 1) {
     return new Device({
         colors: ["FF0000", "FFFF00", "00FF00", "00FFFF", "0000FF", "FF00FF", "FFFFFF"],
         gradients: [{ name: "Rainbow", colors: ["FF0000", "FFFF00", "00FF00", "00FFFF", "0000FF", "FF00FF"] }],
@@ -78,12 +80,13 @@ function getNewDefaultDevice() {
             color: "FF0000",
             gradient: { name: "Rainbow", colors: ["FF0000", "FFFF00", "00FF00", "00FFFF", "0000FF", "FF00FF"] },
             speed: 50,
-            isForward: true
+            isForward: true,
+            numPixels: numPixels
         }
     });
 }
 export async function generateNewDisplay(req: Request, res: Response) {
-    const newDevice = getNewDefaultDevice();
+    const newDevice = getNewDefaultDevice(req.body);
     newDevice.save((error, result) => {
         if (error) {
             console.log(`[${Date.now()}] Failure generating new device`, error)

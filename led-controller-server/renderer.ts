@@ -1,10 +1,208 @@
 import WebSocket from "ws";
 import { WebSocketServer } from 'ws';
-import { IDisplay } from "./schemas";
+import { hexToRgb, linearlyInterpolate } from "../utils";
+import { Device, DisplayType, IDisplay, IGradient } from "./schemas";
 
-export function handleWSConnection(ws: WebSocket){
-    ws.on('message', function message(data: WebSocket.RawData) {
-        ws.send("I received your message");
-        console.log('received: %s', data);
-    });
+const CONTINUE_MSG: string = "Go";
+const FRAMES_PER_SECOND: number = 30;
+const MIN_DURATION = 2; //The lowest duration of a display is 2sec. Max duration will be 100sec * MIN_DURATION
+
+//NOTE: This MUST be an integer (so make sure that MIN_DURATION * FRAMES_PER_SECOND is divisible by 4)
+//This is the number of times to turn OFF THEN ON
+const NUM_TIMES_TO_STROBE = (MIN_DURATION * FRAMES_PER_SECOND) / 4;
+
+interface IPixel {
+    r: number,
+    g: number,
+    b: number
+}
+
+interface IActiveDisplay {
+    frames: IPixel[][]
+    currentFrameIndex: number
+}
+
+export default class Renderer {
+    private currentDisplays: Record<string, IActiveDisplay> = {};
+
+    public handleWSConnection(ws: WebSocket): void {
+        //Assume that we will only ever receive one of two messages:
+        //   - Device ID
+        //   - "Go"
+        ws.on('message', function message(data: WebSocket.RawData) {
+            ws.send(data);
+        });
+    }
+
+    /**
+     * Queries the DB for the current display of the specified device and updates the dictionary
+     * @param id The ID of the device to update display for
+     */
+    public updateDisplay(id: string) {
+        Device.findOne({ _id: id }, null, null, (error, result) => {
+            if (!error && result) {
+                this.currentDisplays.id = { frames: Renderer.calculateFrames(result.currentDisplay, result.numPixels), currentFrameIndex: 0 }
+            }
+        });
+    }
+
+    /**
+     * Calculates the frames for a given display
+     * @param display The display obj to calculate frames for
+     */
+    private static calculateFrames(display: IDisplay, numPixels: number): IPixel[][] {
+        const duration = Math.round((MIN_DURATION * 100) / (display.speed + 0.01)); //Add small value to avoid dividing by zero
+        let numFrames = FRAMES_PER_SECOND * duration;
+        let output: IPixel[][] = []
+
+
+        function calcColorFrames() {
+            let color = hexToRgb(display.color);
+            for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
+                let frame: IPixel[] = [];
+                for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
+                    let pixel = { r: color[0], g: color[1], b: color[2] };
+                    frame.push(pixel);
+                }
+                output.push(frame);
+            }
+        }
+
+
+        function calcGradientFrames() {
+            // Calculate the relative position of each color in gradient on scale of 0-numPixels
+            let colorPositions: number[] = []
+            let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
+            for (let i = 0; i < gradientColors.length; i++) {
+                colorPositions.push((i * numPixels) / gradientColors.length);
+            }
+
+            //Populate frame values
+            for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
+                let frame: IPixel[] = [];
+                let prevColorIndex = 0;
+                for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
+                    if (pixelIndex >= colorPositions[prevColorIndex + 1]) {
+                        prevColorIndex++;
+                    }
+
+                    //Calculate relative position of this pixel between the gradient colors
+                    let pixelPosition = (pixelIndex - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex])
+
+                    //Linearly interpolate
+                    let pixel = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], pixelPosition)
+                    frame.push(pixel);
+                }
+                output.push(frame);
+            }
+        }
+
+
+        function calcWaveFrames() {
+            // Calculate the relative position of each color in gradient on scale of 0-numPixels
+            let colorPositions: number[] = []
+            let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
+            for (let i = 0; i < gradientColors.length; i++) {
+                colorPositions.push((i * numPixels) / gradientColors.length);
+            }
+
+            //Populate frame values
+            for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
+                let offset = frameIndex * (numPixels / numFrames);
+                if (display.isForward) {
+                    offset += -1;
+                }
+
+                let frame: IPixel[] = [];
+                let prevColorIndex = 0;
+                for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
+                    if (pixelIndex >= colorPositions[prevColorIndex + 1]) {
+                        prevColorIndex++;
+                    }
+
+                    //Calculate relative position of this pixel between the gradient colors
+                    let pixelPosition = (((pixelIndex - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex])) + offset) % numPixels
+
+                    //Linearly interpolate
+                    let pixel = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], pixelPosition)
+                    frame.push(pixel);
+                }
+                output.push(frame);
+            }
+        }
+
+
+        function calcCycleFrames() {
+            // Calculate the relative position of each color in gradient on scale of 0-numFrames
+            let colorPositions: number[] = []
+            let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
+            for (let i = 0; i < gradientColors.length; i++) {
+                colorPositions.push((i * numFrames) / gradientColors.length);
+            }
+
+            //Populate frame values
+            let prevColorIndex = 0;
+            for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
+                let frame: IPixel[] = []
+                if (frameIndex >= colorPositions[prevColorIndex + 1]) {
+                    prevColorIndex++;
+                }
+
+                //Calculate relative position of this pixel between the gradient colors
+                let framePosition = (frameIndex - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex])
+
+                //Linearly interpolate
+                let color = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], framePosition)
+
+                for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
+                    frame.push(color)
+                }
+                output.push(frame);
+            }
+        }
+
+
+        function calcStrobeFrames(){
+            //Change numFrames to the nearest multiple of NUM_TIMES_TO_STROBE
+            numFrames = Math.ceil(numFrames / NUM_TIMES_TO_STROBE) * NUM_TIMES_TO_STROBE
+
+            //Populate the output array with the gradient cycle
+            calcCycleFrames();
+
+            //Calculate the length of each segment (number of frames to have lights on/off for).
+            let segLen = numFrames / NUM_TIMES_TO_STROBE;
+
+            //Set the appropriate frames to black
+            for(let frameIndex = 0; frameIndex < numFrames; frameIndex += segLen){
+                for(let segIndex = 0; segIndex < segLen/2; segIndex++){
+                    for(let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++){
+                        output[frameIndex + segIndex][pixelIndex] = {r: 0, g: 0, b: 0}
+                    }
+                }
+            }
+        }
+
+        switch (display.type) {
+            case DisplayType.COLOR:
+                calcColorFrames();
+                break;
+
+            case DisplayType.CYCLE:
+                calcCycleFrames();
+                break;
+
+            case DisplayType.GRADIENT:
+                calcGradientFrames();
+                break;
+
+            case DisplayType.WAVE:
+                calcWaveFrames();
+                break;
+
+            case DisplayType.COLOR_STROBE:
+                calcStrobeFrames();
+                break;
+        }
+        return output;
+    }
 }
