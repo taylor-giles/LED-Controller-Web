@@ -25,31 +25,31 @@ export default class Renderer {
 
     public getNextFrame(deviceId: string): IPixel[] {
         let display = this.currentDisplays[deviceId];
-        if(!display){
+        if (!display) {
             console.log(`Display not found for ${deviceId}. Forcing update...`);
             this.updateDisplay(deviceId);
-            display = this.currentDisplays[deviceId]; 
-            if(!display){
+            display = this.currentDisplays[deviceId];
+            if (!display) {
                 return [];
             }
         }
         let index = display.currentFrameIndex;
-        this.currentDisplays[deviceId].currentFrameIndex = (index+1) % display.frames.length;
+        this.currentDisplays[deviceId].currentFrameIndex = (index + 1) % display.frames.length;
         return display.frames[index];
     }
 
-    public getNextFrameAsArray(deviceId: string): number[] {
+    public async getNextFrameAsArray(deviceId: string): Promise<number[]> {
         let display = this.currentDisplays[deviceId];
-        if(!display){
+        if (!display) {
             console.log(`Display not found for ${deviceId}. Forcing update...`);
-            this.updateDisplay(deviceId);
-            display = this.currentDisplays[deviceId]; 
-            if(!display){
+            await this.updateDisplay(deviceId);
+            display = this.currentDisplays[deviceId];
+            if (!display) {
                 return [];
             }
         }
         let index = display.currentFrameIndex;
-        this.currentDisplays[deviceId].currentFrameIndex = (index+1) % display.frameArrays.length;
+        this.currentDisplays[deviceId].currentFrameIndex = (index + 1) % display.frameArrays.length;
         return display.frameArrays[index];
     }
 
@@ -57,9 +57,9 @@ export default class Renderer {
      * Queries the DB for the current display of the specified device and updates the dictionary
      * @param id The ID of the device to update display for
      */
-    public updateDisplay(id: string) {
-        Device.findOne({ _id: id }, null, null, (error, result) => {
-            if (!error && result) {
+    public async updateDisplay(id: string) {
+        await Device.findOne({ _id: id }).then((result) => {
+            if (result) {
                 let frames = Renderer.calculateFrames(result.currentDisplay, result.numPixels)
                 let arrFrames: number[][] = []
                 for (let frame of frames) {
@@ -76,7 +76,7 @@ export default class Renderer {
                     frames: frames, frameArrays: arrFrames, currentFrameIndex: 0
                 }
             }
-        });
+        })
     }
 
     /**

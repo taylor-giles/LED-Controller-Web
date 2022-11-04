@@ -17,10 +17,11 @@ export async function setDisplay(req: Request, res: Response) {
 
     Device.findOneAndUpdate({ _id: id }, { currentDisplay: req.body }, { returnOriginal: false }, (error, result) => {
         if (error) {
-            console.log(`[${Date.now()}] Failure setting display`, error)
-            res.status(400).json({ error: error, result: result })
+            console.log(`[${Date.now()}] Failure setting display`, error);
+            res.status(400).json({ error: error, result: result });
         } else {
-            res.status(200).json(result)
+            renderer.updateDisplay(id);
+            res.status(200).json(result);
         }
     });
 }
@@ -31,10 +32,10 @@ export async function setSavedColors(req: Request, res: Response) {
 
     Device.findOneAndUpdate({ _id: id }, { colors: req.body }, { returnOriginal: false }, (error, result) => {
         if (error) {
-            console.log(`[${Date.now()}] Failure setting colors`, error)
-            res.status(400).json({ error: error, result: result })
+            console.log(`[${Date.now()}] Failure setting colors`, error);
+            res.status(400).json({ error: error, result: result });
         } else {
-            res.status(200).json(result)
+            res.status(200).json(result);
         }
     });
 }
@@ -63,7 +64,6 @@ export async function getConfig(req: Request, res: Response) {
             res.status(400).json({ error: error, result: result })
         } else {
             res.status(200).json(result)
-            renderer.updateDisplay(id);
         }
     });
 }
