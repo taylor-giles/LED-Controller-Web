@@ -1,37 +1,37 @@
-import WebSocket from "ws";
-import { WebSocketServer } from 'ws';
 import { hexToRgb, linearlyInterpolate } from "../utils";
 import { Device, DisplayType, IDisplay, IGradient } from "./schemas";
 
 const CONTINUE_MSG: string = "Go";
 const FRAMES_PER_SECOND: number = 30;
-const MIN_DURATION = 2; //The lowest duration of a display is 2sec. Max duration will be 100sec * MIN_DURATION
+const MIN_DURATION = 2; //The duration of the quickest display. Max duration will be 100sec * MIN_DURATION
 
 //NOTE: This MUST be an integer (so make sure that MIN_DURATION * FRAMES_PER_SECOND is divisible by 4)
 //This is the number of times to turn OFF THEN ON
 const NUM_TIMES_TO_STROBE = (MIN_DURATION * FRAMES_PER_SECOND) / 4;
 
 interface IPixel {
-    r: number,
-    g: number,
+    r: number
+    g: number
     b: number
 }
 
 interface IActiveDisplay {
     frames: IPixel[][]
+    frameArrays: number[][]
     currentFrameIndex: number
 }
 
 export default class Renderer {
-    private currentDisplays: Record<string, IActiveDisplay> = {};
+    public currentDisplays: Record<string, IActiveDisplay> = {}
 
-    public handleWSConnection(ws: WebSocket): void {
-        //Assume that we will only ever receive one of two messages:
-        //   - Device ID
-        //   - "Go"
-        ws.on('message', function message(data: WebSocket.RawData) {
-            ws.send(data);
-        });
+    public getNextFrame(deviceId: string): IPixel[] {
+        let display = this.currentDisplays[deviceId];
+        return display.frames[display.currentFrameIndex++];
+    }
+
+    public getNextFrameAsArray(deviceId: string) {
+        let display = this.currentDisplays[deviceId];
+        return display.frameArrays[display.currentFrameIndex++];
     }
 
     /**
@@ -41,7 +41,21 @@ export default class Renderer {
     public updateDisplay(id: string) {
         Device.findOne({ _id: id }, null, null, (error, result) => {
             if (!error && result) {
-                this.currentDisplays.id = { frames: Renderer.calculateFrames(result.currentDisplay, result.numPixels), currentFrameIndex: 0 }
+                let frames = Renderer.calculateFrames(result.currentDisplay, result.numPixels)
+                let arrFrames: number[][] = []
+                for (let frame of frames) {
+                    let arrFrame: number[] = []
+                    for (let pixel of frame) {
+                        arrFrame.push(pixel.r);
+                        arrFrame.push(pixel.g);
+                        arrFrame.push(pixel.b);
+                    }
+                    arrFrames.push(arrFrame);
+                }
+
+                this.currentDisplays.id = {
+                    frames: frames, frameArrays: arrFrames, currentFrameIndex: 0
+                }
             }
         });
     }
@@ -162,7 +176,7 @@ export default class Renderer {
         }
 
 
-        function calcStrobeFrames(){
+        function calcStrobeFrames() {
             //Change numFrames to the nearest multiple of NUM_TIMES_TO_STROBE
             numFrames = Math.ceil(numFrames / NUM_TIMES_TO_STROBE) * NUM_TIMES_TO_STROBE
 
@@ -173,10 +187,10 @@ export default class Renderer {
             let segLen = numFrames / NUM_TIMES_TO_STROBE;
 
             //Set the appropriate frames to black
-            for(let frameIndex = 0; frameIndex < numFrames; frameIndex += segLen){
-                for(let segIndex = 0; segIndex < segLen/2; segIndex++){
-                    for(let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++){
-                        output[frameIndex + segIndex][pixelIndex] = {r: 0, g: 0, b: 0}
+            for (let frameIndex = 0; frameIndex < numFrames; frameIndex += segLen) {
+                for (let segIndex = 0; segIndex < segLen / 2; segIndex++) {
+                    for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
+                        output[frameIndex + segIndex][pixelIndex] = { r: 0, g: 0, b: 0 }
                     }
                 }
             }

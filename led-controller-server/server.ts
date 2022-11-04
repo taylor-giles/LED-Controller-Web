@@ -1,5 +1,5 @@
 import express from 'express';
-import { WebSocketServer } from 'ws';
+import { RawData, WebSocketServer } from 'ws';
 import router from './router';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -28,4 +28,9 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'))
 export const renderer = new Renderer();
 const wsServer = new WebSocketServer({ port: 8080 });
 
-wsServer.on('connection', renderer.handleWSConnection);
+wsServer.on('connection', (ws) => {
+    ws.on('message', function message(data: RawData) {
+        let displayId = data.toString();
+        ws.send(renderer.getNextFrameAsArray(displayId))
+    })
+});
