@@ -80,13 +80,13 @@ function getNewDefaultDevice(numPixels = 1) {
             color: "FF0000",
             gradient: { name: "Rainbow", colors: ["FF0000", "FFFF00", "00FF00", "00FFFF", "0000FF", "FF00FF"] },
             speed: 50,
-            isForward: true,
-            numPixels: numPixels
-        }
+            isForward: true
+        },
+        numPixels: numPixels
     });
 }
 export async function generateNewDisplay(req: Request, res: Response) {
-    const newDevice = getNewDefaultDevice(req.body);
+    const newDevice = getNewDefaultDevice(req.body.numPixels);
     newDevice.save((error, result) => {
         if (error) {
             console.log(`[${Date.now()}] Failure generating new device`, error)
@@ -102,20 +102,20 @@ export async function getGuest(req: Request, res: Response) {
     console.log(`[${Date.now()}] Guest device requested`);
     Device.findOne({ guest: true }, null, null, (error, result) => {
         if (error) {
-            res.status(500).json({error: error, result: result});
+            res.status(500).json({ error: error, result: result });
         } else if (!result) {
-                //If there is no guest device, make one
-                console.log(`[${Date.now()}] Generating new guest device`);
-                const newGuest = getNewDefaultDevice();
-                newGuest.set("isGuest", true);
-                newGuest.save((error, result) => {
-                    if (error) {
-                        console.log(`[${Date.now()}] Failure generating new guest device`, error)
-                        res.status(500).json({ error: error, result: result });
-                    } else {
-                        res.status(200).json(result)
-                    }
-                })
+            //If there is no guest device, make one
+            console.log(`[${Date.now()}] Generating new guest device`);
+            const newGuest = getNewDefaultDevice();
+            newGuest.set("isGuest", true);
+            newGuest.save((error, result) => {
+                if (error) {
+                    console.log(`[${Date.now()}] Failure generating new guest device`, error)
+                    res.status(500).json({ error: error, result: result });
+                } else {
+                    res.status(200).json(result)
+                }
+            })
         } else {
             res.status(200).json(result)
         }
