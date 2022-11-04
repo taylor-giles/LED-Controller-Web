@@ -107,7 +107,7 @@ export default class Renderer {
             let colorPositions: number[] = []
             let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
             for (let i = 0; i < gradientColors.length; i++) {
-                colorPositions.push((i * numPixels) / gradientColors.length);
+                colorPositions.push((i * numPixels) / (gradientColors.length-1));
             }
 
             //Populate frame values
@@ -136,7 +136,7 @@ export default class Renderer {
             let colorPositions: number[] = []
             let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
             for (let i = 0; i < gradientColors.length; i++) {
-                colorPositions.push((i * numPixels) / gradientColors.length);
+                colorPositions.push((i * numPixels) / (gradientColors.length-1));
             }
 
             //Populate frame values
@@ -170,7 +170,7 @@ export default class Renderer {
             let colorPositions: number[] = []
             let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
             for (let i = 0; i < gradientColors.length; i++) {
-                colorPositions.push((i * numFrames) / gradientColors.length);
+                colorPositions.push((i * numPixels) / (gradientColors.length-1));
             }
 
             //Populate frame values
