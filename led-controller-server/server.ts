@@ -21,7 +21,7 @@ mongoose.connect(DB_URI).catch(
 );
 
 const db = mongoose.connection
-db.on('error', console.error.bind(console, 'MongoDB connection error:'))
+db.on('error', console.error.bind(console, "MongoDB connection error:"))
 
 
 // Websocket
@@ -30,7 +30,8 @@ const wsServer = new WebSocketServer({ port: 8080 });
 
 wsServer.on('connection', (ws) => {
     ws.on('message', function message(data: RawData) {
+        //The only message we should ever receive from the client is their display ID
         let displayId = data.toString();
-        ws.send(renderer.getNextFrameAsArray(displayId))
+        ws.send(renderer.getNextFrameAsArray(displayId));
     })
 });

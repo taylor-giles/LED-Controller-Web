@@ -1,13 +1,12 @@
 import { hexToRgb, linearlyInterpolate } from "../utils";
-import { Device, DisplayType, IDisplay, IGradient } from "./schemas";
+import { Device, DisplayType, IDisplay } from "./schemas";
 
-const CONTINUE_MSG: string = "Go";
 const FRAMES_PER_SECOND: number = 30;
 const MIN_DURATION = 2; //The duration of the quickest display. Max duration will be 100sec * MIN_DURATION
 
-//NOTE: This MUST be an integer (so make sure that MIN_DURATION * FRAMES_PER_SECOND is divisible by 4)
+//NOTE: This MUST be an integer (so make sure that MIN_DURATION * FRAMES_PER_SECOND is divisible by 2)
 //This is the number of times to turn OFF THEN ON
-const NUM_TIMES_TO_STROBE = (MIN_DURATION * FRAMES_PER_SECOND) / 4;
+const NUM_TIMES_TO_STROBE = (MIN_DURATION * FRAMES_PER_SECOND) / 2;
 
 interface IPixel {
     r: number
