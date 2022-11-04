@@ -9,8 +9,8 @@ const apiCaller = axios.create({
 //GETTERS
 
 //Returns the new ID
-export async function getNewId(): Promise<string>{
-    return apiCaller.get('generate').then((res) => {
+export async function getNewId(numPixels: number): Promise<string>{
+    return apiCaller.post('generate', numPixels).then((res) => {
         return res.data._id;
     }).catch((error) => "ERROR")
 }

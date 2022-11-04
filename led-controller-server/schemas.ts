@@ -26,6 +26,7 @@ interface IDevice {
     colors: string[],
     gradients: IGradient[],
     currentDisplay: IDisplay,
+    numPixels: number,
     isGuest?: Boolean
 }
 
@@ -47,6 +48,7 @@ const deviceSchema = new mongoose.Schema<IDevice>({
     colors: {type: [String], required: true},
     gradients: {type: [gradientSchema], required: true},
     currentDisplay: {type: displaySchema, required: true},
+    numPixels: {type: Number, required: true},
     isGuest: {type: Boolean}
 });
 

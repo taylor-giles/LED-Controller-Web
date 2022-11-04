@@ -3,7 +3,7 @@ import { generateNewDisplay, ensureId, setDisplay, setSavedColors, setSavedGradi
 const router = express.Router();
 
 router.get('/getGuest', getGuest);
-router.get('/generate', generateNewDisplay)
+router.post('/generate', generateNewDisplay)
 router.post('/setDisplay/:id', ensureId, setDisplay)
 router.post('/setGradients/:id', ensureId, setSavedGradients)
 router.post('/setColors/:id', ensureId, setSavedColors)
