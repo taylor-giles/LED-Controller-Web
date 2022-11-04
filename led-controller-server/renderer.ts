@@ -26,12 +26,16 @@ export default class Renderer {
 
     public getNextFrame(deviceId: string): IPixel[] {
         let display = this.currentDisplays[deviceId];
-        return display.frames[display.currentFrameIndex++];
+        let index = display.currentFrameIndex;
+        this.currentDisplays[deviceId].currentFrameIndex = (index+1) % display.frames.length;
+        return display.frames[index];
     }
 
     public getNextFrameAsArray(deviceId: string) {
         let display = this.currentDisplays[deviceId];
-        return display.frameArrays[display.currentFrameIndex++];
+        let index = display.currentFrameIndex;
+        this.currentDisplays[deviceId].currentFrameIndex = (index+1) % display.frameArrays.length;
+        return display.frameArrays[index];
     }
 
     /**
