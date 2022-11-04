@@ -21,19 +21,35 @@ interface IActiveDisplay {
 }
 
 export default class Renderer {
-    public currentDisplays: Record<string, IActiveDisplay> = {}
+    private currentDisplays: Record<string, IActiveDisplay> = {}
 
     public getNextFrame(deviceId: string): IPixel[] {
         let display = this.currentDisplays[deviceId];
+        if(!display){
+            console.log(`Display not found for ${deviceId}. Forcing update...`);
+            this.updateDisplay(deviceId);
+            display = this.currentDisplays[deviceId]; 
+            if(!display){
+                return [];
+            }
+        }
         let index = display.currentFrameIndex;
-        this.currentDisplays[deviceId].currentFrameIndex = (index + 1) % display.frames.length;
+        this.currentDisplays[deviceId].currentFrameIndex = (index+1) % display.frames.length;
         return display.frames[index];
     }
 
-    public getNextFrameAsArray(deviceId: string) {
+    public getNextFrameAsArray(deviceId: string): number[] {
         let display = this.currentDisplays[deviceId];
+        if(!display){
+            console.log(`Display not found for ${deviceId}. Forcing update...`);
+            this.updateDisplay(deviceId);
+            display = this.currentDisplays[deviceId]; 
+            if(!display){
+                return [];
+            }
+        }
         let index = display.currentFrameIndex;
-        this.currentDisplays[deviceId].currentFrameIndex = (index + 1) % display.frameArrays.length;
+        this.currentDisplays[deviceId].currentFrameIndex = (index+1) % display.frameArrays.length;
         return display.frameArrays[index];
     }
 
@@ -53,10 +69,10 @@ export default class Renderer {
                         arrFrame.push(pixel.g);
                         arrFrame.push(pixel.b);
                     }
-                    arrFrames.push(arrFrame);
+                    arrFrames.push(arrFrame)
                 }
 
-                this.currentDisplays.id = {
+                this.currentDisplays[id] = {
                     frames: frames, frameArrays: arrFrames, currentFrameIndex: 0
                 }
             }
@@ -220,17 +236,6 @@ export default class Renderer {
                 calcStrobeFrames();
                 break;
         }
-
-        //Factor in brightness
-        let brightnessRatio = display.brightness / 100;
-        for (let frameIndex in output) {
-            for (let pixelIndex in output[frameIndex]) {
-                output[frameIndex][pixelIndex].r *= brightnessRatio;
-                output[frameIndex][pixelIndex].g *= brightnessRatio;
-                output[frameIndex][pixelIndex].b *= brightnessRatio;
-            }
-        }
-        
         return output;
     }
 }

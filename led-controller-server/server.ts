@@ -26,6 +26,7 @@ db.on('error', console.error.bind(console, "MongoDB connection error:"))
 
 // Websocket
 export const renderer = new Renderer();
+
 const wsServer = new WebSocketServer({ port: 8080 });
 
 wsServer.on('connection', (ws) => {
