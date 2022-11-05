@@ -17,8 +17,8 @@
         ERROR: "Error Page",
     };
 
-    let savedColors = null;
-    let savedGradients = null;
+    let savedColors = undefined;
+    let savedGradients = undefined;
 
     let currentPage = deviceId ? PAGES.HOME : PAGES.LANDING;
     let currentEffectType;
