@@ -1,7 +1,7 @@
 import { hexToRgb, linearlyInterpolate } from "../utils";
 import { Device, DisplayType, IDisplay } from "./schemas";
 
-const FRAMES_PER_SECOND: number = 30;
+const FRAMES_PER_SECOND: number = 120;
 const MIN_DURATION = 2; //The duration of the quickest display. Max duration will be 100sec * MIN_DURATION
 
 //The maximum number of frames that the lights should be OFF during strobe. Set to 2sec.
