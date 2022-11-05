@@ -195,7 +195,7 @@
 
     #title {
         font-family: "Courier New", Courier, monospace;
-        font-size: 18pt;
+        font-size: 16pt;
         text-align: center;
         padding: 10px;
         margin-inline: 25px;
