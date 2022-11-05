@@ -64,7 +64,6 @@
 
     function onBrightnessChange(e) {
         currentBrightness = e.detail;
-        updateDisplay();
     }
 
     function onDeleteGradient(e) {
