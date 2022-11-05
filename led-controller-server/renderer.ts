@@ -36,14 +36,18 @@ export default class Renderer {
      * @param id The ID of the device to update display for
      */
     public async updateDisplay(id: string) {
-        await Device.findOne({ _id: id }).then((result) => {
-            if (result) {
-                let frames = Renderer.calculateFrames(result.currentDisplay, result.numPixels)
-                this.currentDisplays[id] = {
-                    frames: frames, currentFrameIndex: 0
+        try {
+            await Device.findOne({ _id: id }).then((result) => {
+                if (result) {
+                    let frames = Renderer.calculateFrames(result.currentDisplay, result.numPixels)
+                    this.currentDisplays[id] = {
+                        frames: frames, currentFrameIndex: 0
+                    }
                 }
-            }
-        })
+            })
+        } catch{
+            return
+        }
     }
 
     /**
