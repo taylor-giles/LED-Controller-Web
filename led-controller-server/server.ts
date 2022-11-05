@@ -33,6 +33,6 @@ wsServer.on('connection', (ws) => {
     ws.on('message', function message(data: RawData) {
         //The only message we should ever receive from the client is their display ID
         let displayId = data.toString();
-        renderer.getNextFrameAsArray(displayId).then((result) => ws.send(result));
+        renderer.getNextFrame(displayId).then((result) => ws.send(result));
     })
 });

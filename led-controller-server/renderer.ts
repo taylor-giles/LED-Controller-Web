@@ -4,41 +4,19 @@ import { Device, DisplayType, IDisplay } from "./schemas";
 const FRAMES_PER_SECOND: number = 30;
 const MIN_DURATION = 2; //The duration of the quickest display. Max duration will be 100sec * MIN_DURATION
 
-//NOTE: This MUST be an integer (so make sure that MIN_DURATION * FRAMES_PER_SECOND is divisible by 2)
-//This is the number of times to turn OFF THEN ON
-const NUM_TIMES_TO_STROBE = (MIN_DURATION * FRAMES_PER_SECOND) / 2;
+//The maximum number of frames that the lights should be OFF during strobe. Set to 10sec.
+const MAX_STROBE_FRAMES_OFF = FRAMES_PER_SECOND * 10;
 
-interface IPixel {
-    r: number
-    g: number
-    b: number
-}
-
+//Frames are of the format [r,g,b,r,g,b,r,g,b,...] where each set of 3 (r,g,b) is a pixel value
 interface IActiveDisplay {
-    frames: IPixel[][]
-    frameArrays: number[][]
+    frames: number[][]
     currentFrameIndex: number
 }
 
 export default class Renderer {
     private currentDisplays: Record<string, IActiveDisplay> = {}
 
-    public getNextFrame(deviceId: string): IPixel[] {
-        let display = this.currentDisplays[deviceId];
-        if (!display) {
-            console.log(`Display not found for ${deviceId}. Forcing update...`);
-            this.updateDisplay(deviceId);
-            display = this.currentDisplays[deviceId];
-            if (!display) {
-                return [];
-            }
-        }
-        let index = display.currentFrameIndex;
-        this.currentDisplays[deviceId].currentFrameIndex = (index + 1) % display.frames.length;
-        return display.frames[index];
-    }
-
-    public async getNextFrameAsArray(deviceId: string): Promise<number[]> {
+    public async getNextFrame(deviceId: string): Promise<number[]> {
         let display = this.currentDisplays[deviceId];
         if (!display) {
             console.log(`Display not found for ${deviceId}. Forcing update...`);
@@ -49,8 +27,8 @@ export default class Renderer {
             }
         }
         let index = display.currentFrameIndex;
-        this.currentDisplays[deviceId].currentFrameIndex = (index + 1) % display.frameArrays.length;
-        return display.frameArrays[index];
+        this.currentDisplays[deviceId].currentFrameIndex = (index + 1) % display.frames.length;
+        return display.frames[index];
     }
 
     /**
@@ -61,19 +39,8 @@ export default class Renderer {
         await Device.findOne({ _id: id }).then((result) => {
             if (result) {
                 let frames = Renderer.calculateFrames(result.currentDisplay, result.numPixels)
-                let arrFrames: number[][] = []
-                for (let frame of frames) {
-                    let arrFrame: number[] = []
-                    for (let pixel of frame) {
-                        arrFrame.push(pixel.r);
-                        arrFrame.push(pixel.g);
-                        arrFrame.push(pixel.b);
-                    }
-                    arrFrames.push(arrFrame)
-                }
-
                 this.currentDisplays[id] = {
-                    frames: frames, frameArrays: arrFrames, currentFrameIndex: 0
+                    frames: frames, currentFrameIndex: 0
                 }
             }
         })
@@ -83,26 +50,28 @@ export default class Renderer {
      * Calculates the frames for a given display
      * @param display The display obj to calculate frames for
      */
-    private static calculateFrames(display: IDisplay, numPixels: number): IPixel[][] {
+    private static calculateFrames(display: IDisplay, numPixels: number): number[][] {
         const duration = Math.round((MIN_DURATION * 100) / (display.speed + 0.01)); //Add small value to avoid dividing by zero
         let numFrames = FRAMES_PER_SECOND * duration;
-        let output: IPixel[][] = []
+        let output: number[][] = []
 
 
         function calcColorFrames() {
+            //Only one frame - all pixels are the same color
             let color = hexToRgb(display.color);
-            for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
-                let frame: IPixel[] = [];
-                for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
-                    let pixel = { r: color[0], g: color[1], b: color[2] };
-                    frame.push(pixel);
-                }
-                output.push(frame);
+            let frame: number[] = []
+            for(let i = 0; i < numPixels; i++){
+                frame.push(color[0])
+                frame.push(color[1])
+                frame.push(color[2])
             }
+            output.push(frame);
         }
 
 
         function calcGradientFrames() {
+            //Only one frame
+
             // Calculate the relative position of each color in gradient on scale of 0-numPixels
             let colorPositions: number[] = []
             let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
@@ -111,23 +80,23 @@ export default class Renderer {
             }
 
             //Populate frame values
-            for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
-                let frame: IPixel[] = [];
-                let prevColorIndex = 0;
-                for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
-                    if (pixelIndex >= colorPositions[prevColorIndex + 1]) {
-                        prevColorIndex++;
-                    }
-
-                    //Calculate relative position of this pixel between the gradient colors
-                    let pixelPosition = (pixelIndex - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex])
-
-                    //Linearly interpolate
-                    let pixel = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], pixelPosition)
-                    frame.push(pixel);
+            let frame: number[] = [];
+            let prevColorIndex = 0;
+            for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
+                if (pixelIndex >= colorPositions[prevColorIndex + 1]) {
+                    prevColorIndex++;
                 }
-                output.push(frame);
+
+                //Calculate relative position of this pixel between the gradient colors
+                let pixelPosition = (pixelIndex - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex])
+
+                //Linearly interpolate
+                let pixel = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], pixelPosition)
+                frame.push(pixel.r);
+                frame.push(pixel.g);
+                frame.push(pixel.b);
             }
+            output.push(frame);
         }
 
 
@@ -143,10 +112,10 @@ export default class Renderer {
             for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
                 let offset = frameIndex * (numPixels / numFrames);
                 if (display.isForward) {
-                    offset += -1;
+                    offset *= -1;
                 }
 
-                let frame: IPixel[] = [];
+                let frame: number[] = [];
                 let prevColorIndex = 0;
                 for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
                     if (pixelIndex >= colorPositions[prevColorIndex + 1]) {
@@ -158,7 +127,9 @@ export default class Renderer {
 
                     //Linearly interpolate
                     let pixel = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], pixelPosition)
-                    frame.push(pixel);
+                    frame.push(pixel.r);
+                    frame.push(pixel.g);
+                    frame.push(pixel.b);
                 }
                 output.push(frame);
             }
@@ -170,25 +141,26 @@ export default class Renderer {
             let colorPositions: number[] = []
             let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
             for (let i = 0; i < gradientColors.length; i++) {
-                colorPositions.push((i * numPixels) / (gradientColors.length-1));
+                colorPositions.push((i * numFrames) / (gradientColors.length - 1));
             }
 
             //Populate frame values
             let prevColorIndex = 0;
             for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
-                let frame: IPixel[] = []
+                let frame: number[] = [];
                 if (frameIndex >= colorPositions[prevColorIndex + 1]) {
                     prevColorIndex++;
                 }
 
                 //Calculate relative position of this pixel between the gradient colors
-                let framePosition = (frameIndex - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex])
+                let pixelPosition = (frameIndex - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex])
 
                 //Linearly interpolate
-                let color = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], framePosition)
-
-                for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
-                    frame.push(color)
+                let pixel = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], pixelPosition)
+                for(let pixelIndex = 0; pixelIndex < numPixels; numPixels++){
+                    frame.push(pixel.r);
+                    frame.push(pixel.g);
+                    frame.push(pixel.b);
                 }
                 output.push(frame);
             }
@@ -196,21 +168,34 @@ export default class Renderer {
 
 
         function calcStrobeFrames() {
-            //Change numFrames to the nearest multiple of NUM_TIMES_TO_STROBE
-            numFrames = Math.ceil(numFrames / NUM_TIMES_TO_STROBE) * NUM_TIMES_TO_STROBE
+            //Determine the segment length
+            let segLen = Math.round((1-(display.speed/100)) * MAX_STROBE_FRAMES_OFF + 1)
 
-            //Populate the output array with the gradient cycle
-            calcCycleFrames();
+            //Get the gradient colors
+            let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
 
-            //Calculate the length of each segment (number of frames to have lights on/off for).
-            let segLen = numFrames / NUM_TIMES_TO_STROBE;
 
-            //Set the appropriate frames to black
-            for (let frameIndex = 0; frameIndex < numFrames; frameIndex += segLen) {
-                for (let segIndex = 0; segIndex < segLen / 2; segIndex++) {
-                    for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
-                        output[frameIndex + segIndex][pixelIndex] = { r: 0, g: 0, b: 0 }
+            for(let color of gradientColors){
+                //Color frames
+                for(let i = 0; i < segLen; i++){
+                    let frame: number[] = []
+                    for(let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++){
+                        frame.push(color.r);
+                        frame.push(color.g);
+                        frame.push(color.b);
                     }
+                    output.push(frame);
+                }
+
+                //OFF ("black") frames
+                for(let i = 0; i < segLen; i++){
+                    let frame: number[] = []
+                    for(let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++){
+                        frame.push(0);
+                        frame.push(0);
+                        frame.push(0);
+                    }
+                    output.push(frame);
                 }
             }
         }
