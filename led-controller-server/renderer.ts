@@ -45,7 +45,7 @@ export default class Renderer {
                     }
                 }
             })
-        } catch{
+        } catch {
             return
         }
     }
@@ -55,7 +55,10 @@ export default class Renderer {
      * @param display The display obj to calculate frames for
      */
     private static calculateFrames(display: IDisplay, numPixels: number): number[][] {
-        const duration = Math.round((MIN_DURATION * 100) / (display.speed + 0.01)); //Add small value to avoid dividing by zero
+        let speed = display.speed;
+        if(speed == 0) speed = 1;
+        const duration = Math.round((MIN_DURATION * 100) / speed);
+        const brightnessRatio = display.brightness / 100;
         let numFrames = FRAMES_PER_SECOND * duration;
         let output: number[][] = []
 
@@ -64,10 +67,10 @@ export default class Renderer {
             //Only one frame - all pixels are the same color
             let color = hexToRgb(display.color);
             let frame: number[] = []
-            for(let i = 0; i < numPixels; i++){
-                frame.push(color[0])
-                frame.push(color[1])
-                frame.push(color[2])
+            for (let i = 0; i < numPixels; i++) {
+                frame.push(color[0] * brightnessRatio)
+                frame.push(color[1] * brightnessRatio)
+                frame.push(color[2] * brightnessRatio)
             }
             output.push(frame);
         }
@@ -80,7 +83,7 @@ export default class Renderer {
             let colorPositions: number[] = []
             let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
             for (let i = 0; i < gradientColors.length; i++) {
-                colorPositions.push((i * numPixels) / (gradientColors.length-1));
+                colorPositions.push((i * numPixels) / (gradientColors.length - 1));
             }
 
             //Populate frame values
@@ -96,9 +99,9 @@ export default class Renderer {
 
                 //Linearly interpolate
                 let pixel = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], pixelPosition)
-                frame.push(pixel.r);
-                frame.push(pixel.g);
-                frame.push(pixel.b);
+                frame.push(pixel.r * brightnessRatio);
+                frame.push(pixel.g * brightnessRatio);
+                frame.push(pixel.b * brightnessRatio);
             }
             output.push(frame);
         }
@@ -109,12 +112,12 @@ export default class Renderer {
             let colorPositions: number[] = []
             let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
             for (let i = 0; i < gradientColors.length; i++) {
-                colorPositions.push((i * numPixels) / (gradientColors.length-1));
+                colorPositions.push((i * numPixels) / (gradientColors.length - 1));
             }
 
             //Populate frame values
             for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
-                let offset = frameIndex * (numPixels / numFrames);
+                let offset = (frameIndex/ numFrames) * numPixels;
                 if (display.isForward) {
                     offset *= -1;
                 }
@@ -122,18 +125,27 @@ export default class Renderer {
                 let frame: number[] = [];
                 let prevColorIndex = 0;
                 for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
-                    if (pixelIndex >= colorPositions[prevColorIndex + 1]) {
-                        prevColorIndex++;
+                    let offsetIndex = pixelIndex + offset;
+                    while(offsetIndex < 0){
+                        offsetIndex += numPixels
+                    }
+                    let pixelLocation = offsetIndex % numPixels;
+
+                    //Find the gradient position closest to this pixel
+                    for (let positionIndex=0; positionIndex < colorPositions.length-1; positionIndex++) {
+                        if (colorPositions[positionIndex] <= pixelLocation && colorPositions[positionIndex + 1] >= pixelLocation) {
+                            prevColorIndex = positionIndex;
+                        }
                     }
 
                     //Calculate relative position of this pixel between the gradient colors
-                    let pixelPosition = (((pixelIndex - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex])) + offset) % numPixels
+                    let pixelPosition = ((pixelLocation - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex]))
 
                     //Linearly interpolate
                     let pixel = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], pixelPosition)
-                    frame.push(pixel.r);
-                    frame.push(pixel.g);
-                    frame.push(pixel.b);
+                    frame.push(pixel.r * brightnessRatio);
+                    frame.push(pixel.g * brightnessRatio);
+                    frame.push(pixel.b * brightnessRatio);
                 }
                 output.push(frame);
             }
@@ -147,6 +159,7 @@ export default class Renderer {
             for (let i = 0; i < gradientColors.length; i++) {
                 colorPositions.push((i * numFrames) / (gradientColors.length - 1));
             }
+            output = []
 
             //Populate frame values
             let prevColorIndex = 0;
@@ -155,16 +168,16 @@ export default class Renderer {
                 if (frameIndex >= colorPositions[prevColorIndex + 1]) {
                     prevColorIndex++;
                 }
-
-                //Calculate relative position of this pixel between the gradient colors
-                let pixelPosition = (frameIndex - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex])
-
+                
+                //Calculate relative position of this frame between the gradient colors
+                let framePosition = (frameIndex - colorPositions[prevColorIndex]) / (colorPositions[prevColorIndex + 1] - colorPositions[prevColorIndex]);
+                
                 //Linearly interpolate
-                let pixel = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], pixelPosition)
-                for(let pixelIndex = 0; pixelIndex < numPixels; numPixels++){
-                    frame.push(pixel.r);
-                    frame.push(pixel.g);
-                    frame.push(pixel.b);
+                let pixel = linearlyInterpolate(gradientColors[prevColorIndex], gradientColors[prevColorIndex + 1], framePosition)
+                for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
+                    frame.push(pixel.r * brightnessRatio);
+                    frame.push(pixel.g * brightnessRatio);
+                    frame.push(pixel.b * brightnessRatio);
                 }
                 output.push(frame);
             }
@@ -173,28 +186,27 @@ export default class Renderer {
 
         function calcStrobeFrames() {
             //Determine the segment length
-            let segLen = Math.round((1-(display.speed/100)) * MAX_STROBE_FRAMES_OFF + 1)
+            let segLen = Math.round((1 - (display.speed / 100)) * MAX_STROBE_FRAMES_OFF + 1)
 
             //Get the gradient colors
             let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
 
-
-            for(let color of gradientColors){
+            for (let color of gradientColors) {
                 //Color frames
-                for(let i = 0; i < segLen; i++){
+                for (let i = 0; i < segLen; i++) {
                     let frame: number[] = []
-                    for(let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++){
-                        frame.push(color.r);
-                        frame.push(color.g);
-                        frame.push(color.b);
+                    for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
+                        frame.push(color.r * brightnessRatio);
+                        frame.push(color.g * brightnessRatio);
+                        frame.push(color.b * brightnessRatio);
                     }
                     output.push(frame);
                 }
 
                 //OFF ("black") frames
-                for(let i = 0; i < segLen; i++){
+                for (let i = 0; i < segLen; i++) {
                     let frame: number[] = []
-                    for(let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++){
+                    for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
                         frame.push(0);
                         frame.push(0);
                         frame.push(0);
