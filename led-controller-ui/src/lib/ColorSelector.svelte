@@ -10,7 +10,7 @@
     export let hue = 0;
     export let lightness = 0.5;
     export let buttonText = "Submit";
-    export let savedColors = [];
+    export let savedColors;
     export let shadow = "0px -10px 20px 0px black";
     export let border = "";
     export let showButton = true;
