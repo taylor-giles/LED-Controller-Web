@@ -1,7 +1,7 @@
 <script>
     import GradientView from "./GradientView.svelte";
     import { createEventDispatcher } from "svelte";
-    import IconButton, { Icon } from "@smui/icon-button";
+    import IconButton from "@smui/icon-button";
     import DeleteIcon from "svelte-material-icons/Delete.svelte";
     import CheckIcon from "svelte-material-icons/Check.svelte";
 

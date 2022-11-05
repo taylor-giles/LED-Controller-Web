@@ -1,5 +1,5 @@
 <script>
-  import IconButton, { Icon } from "@smui/icon-button";
+  import IconButton from "@smui/icon-button";
   import DeleteIcon from "svelte-material-icons/Delete.svelte";
   import UpArrowIcon from "svelte-material-icons/ArrowUpBold.svelte";
   import DownArrowIcon from "svelte-material-icons/ArrowDownBold.svelte";

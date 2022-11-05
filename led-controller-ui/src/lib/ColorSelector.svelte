@@ -1,5 +1,5 @@
 <script>
-    import IconButton, { Icon } from "@smui/icon-button";
+    import IconButton from "@smui/icon-button";
     import Star from "svelte-material-icons/Star.svelte";
     import StarOutline from "svelte-material-icons/StarOutline.svelte";
     import { createEventDispatcher } from "svelte";

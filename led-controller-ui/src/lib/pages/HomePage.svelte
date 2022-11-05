@@ -1,12 +1,9 @@
 <script>
-    import IconButton, { Icon } from "@smui/icon-button";
     import { createEventDispatcher } from "svelte";
-    import RightIcon from "svelte-material-icons/ChevronRight.svelte";
     import { DisplayType } from "../../../../led-controller-server/schemas";
     import {
         MONOCHROME_EFFECTS,
-        ADDRESSABLE_EFFECTS,
-        EFFECTS,
+        ADDRESSABLE_EFFECTS
     } from "../../types/effectTypes";
     import ColorSelector from "../ColorSelector.svelte";
     import GradientSelector from "../GradientSelector.svelte";
@@ -47,7 +44,10 @@
 </script>
 
 <div id="main">
-    <div id="title">TG LED Controller</div>
+    <div id="title">
+        <img src="/bulb-icon.png" id="icon" alt="icon"/>
+        TG LED Controller
+    </div>
     <div id="main-content" class="flex-spacer">
         <!-- Brightness -->
         <div id="brightness-container">
@@ -195,12 +195,17 @@
 
     #title {
         font-family: "Courier New", Courier, monospace;
-        font-size: 20pt;
+        font-size: 18pt;
         text-align: center;
         padding: 10px;
         margin-inline: 25px;
         border-bottom: 1px solid var(--accent);
         margin-bottom: 30px;
+    }
+
+    #icon {
+        height: 24px;
+        width: 24px;
     }
 
     #main-content {

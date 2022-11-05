@@ -1,5 +1,4 @@
 <script>
-    import { DisplayType } from "../../led-controller-server/schemas";
     import { getConfig, setColors, setDisplay, setGradients } from "./api";
     import ErrorPage from "./lib/pages/ErrorPage.svelte";
     import GradientCreationPage from "./lib/pages/GradientCreationPage.svelte";

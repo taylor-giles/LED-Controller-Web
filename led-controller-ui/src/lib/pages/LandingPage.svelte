@@ -1,8 +1,5 @@
 <script>
-    import { createEventDispatcher } from "svelte";
     import { getGuestId, getNewId } from "../../api";
-
-    const dispatch = createEventDispatcher();
 
     let enteredId = "";
     let isHandlingRegisterRequest = false;
@@ -36,14 +33,17 @@
 </script>
 
 <div id="main">
-    <div id="title">TG LED Controller</div>
+    <div id="title">
+        <img src="/bulb-icon.png" id="icon" alt="icon" />
+        TG LED Controller
+    </div>
     <div id="banner">Welcome!</div>
     {#if !isHandlingRegisterRequest}
         <div class="main-content">
             <ul>
                 <li>
-                    To register a new device, enter the number of pixels in your display and press the "Register New Device"
-                    button below.
+                    To register a new device, enter the number of pixels in your
+                    display and press the "Register New Device" button below.
                 </li>
                 <li>
                     To use an existing device, enter your device ID in the field
@@ -124,13 +124,21 @@
         height: 100%;
     }
     #title {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         font-family: "Courier New", Courier, monospace;
-        font-size: 20pt;
+        font-size: 18pt;
         text-align: center;
         padding: 10px;
         margin-inline: 25px;
         border-bottom: 1px solid var(--accent);
         margin-bottom: 30px;
+    }
+    #icon {
+        height: 40px;
+        width: 40px;
+        margin-right: 10px;
     }
     #subtitle {
         margin-top: 10px;
