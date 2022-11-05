@@ -4,8 +4,8 @@ import { Device, DisplayType, IDisplay } from "./schemas";
 const FRAMES_PER_SECOND: number = 30;
 const MIN_DURATION = 2; //The duration of the quickest display. Max duration will be 100sec * MIN_DURATION
 
-//The maximum number of frames that the lights should be OFF during strobe. Set to 10sec.
-const MAX_STROBE_FRAMES_OFF = FRAMES_PER_SECOND * 10;
+//The maximum number of frames that the lights should be OFF during strobe. Set to 2sec.
+const MAX_STROBE_FRAMES_OFF = FRAMES_PER_SECOND * 2;
 
 //Frames are of the format [r,g,b,r,g,b,r,g,b,...] where each set of 3 (r,g,b) is a pixel value
 interface IActiveDisplay {
