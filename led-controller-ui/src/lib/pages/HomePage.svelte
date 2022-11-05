@@ -16,9 +16,9 @@
 
     export let currentEffectType = DisplayType.COLOR;
     export let currentBrightness = 100;
-    export let savedColors = [];
-    export let savedGradients = [];
-    export let chosenColor = "000000";
+    export let savedColors;
+    export let savedGradients;
+    export let chosenColor = "FF0000";
     export let chosenGradient = { name: "Not Yet Chosen", colors: ["000000"] };
     export let chosenSpeed = 100;
     export let chosenDirection = "Forward";
