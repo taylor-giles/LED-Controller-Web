@@ -50,6 +50,7 @@
         }
         savedColors = savedColors;
         isCurrentColorFavorited = savedColors.includes(_currentColorHex);
+        dispatch("favoritesChange");
     }
 
     /**

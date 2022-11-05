@@ -29,10 +29,6 @@
     let brightnessSet = 1;
     $: brightnessSet = currentBrightness / 100;
 
-    function onDeleteGradient(e) {
-        dispatch("deleteGradient", e.detail);
-    }
-
     function onBrightnessChange(e) {
         dispatch("brightnessChange", Math.round(e.detail[1] * 100));
     }
@@ -116,6 +112,7 @@
                         buttonText="Set Display"
                         bind:currentColorHex={chosenColor}
                         on:click={setDisplay}
+                        on:favoritesChange
                         showButton={false}
                         shadow=""
                     />
@@ -172,7 +169,7 @@
                             <GradientSelector
                                 bind:gradients={savedGradients}
                                 bind:chosenGradient
-                                on:delete={onDeleteGradient}
+                                on:gradientDelete
                             />
                         </div>
                         <button on:click={onNewGradientClick} class="button">Add New Gradient</button>

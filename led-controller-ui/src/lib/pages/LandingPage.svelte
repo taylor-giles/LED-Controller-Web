@@ -1,8 +1,4 @@
 <script>
-    import { hslToHex } from "../../../../utils";
-    import ColorCard from "../ColorCard.svelte";
-    import ColorSelector from "../ColorSelector.svelte";
-    import GradientView from "../GradientView.svelte";
     import { createEventDispatcher } from "svelte";
     import { getGuestId, getNewId } from "../../api";
 

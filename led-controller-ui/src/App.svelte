@@ -51,9 +51,6 @@
         });
     }
 
-    $: if (deviceId && savedColors) setColors(deviceId, savedColors);
-    $: if (deviceId && savedGradients) setGradients(deviceId, savedGradients);
-
     function updateDisplay() {
         setDisplay(deviceId, {
             type: currentEffectType,
@@ -74,6 +71,7 @@
         let gradient = e.detail;
         savedGradients.splice(savedGradients.indexOf(gradient), 1);
         savedGradients = savedGradients;
+        setGradients(deviceId, savedGradients);
     }
 
     function onNewGradientClick(e) {
@@ -88,6 +86,7 @@
             { name: newGradientName, colors: newGradientColors },
         ];
         currentPage = PAGES.HOME;
+        setGradients(deviceId, savedGradients);
     }
 
     function onGradientCreationCancel() {
@@ -110,6 +109,7 @@
             on:brightnessChange={onBrightnessChange}
             on:newGradientClick={onNewGradientClick}
             on:setDisplay={updateDisplay}
+            on:favoritesChange={() => setColors(deviceId, savedColors)}
         />
     {:else if currentPage == PAGES.GRADIENT_CREATE}
         <GradientCreationPage
@@ -118,6 +118,7 @@
             bind:name={newGradientName}
             on:save={onGradientSave}
             on:cancel={onGradientCreationCancel}
+            on:favoritesChange={() => setColors(deviceId, savedColors)}
         />
     {:else if currentPage == PAGES.LANDING}
         <LandingPage />

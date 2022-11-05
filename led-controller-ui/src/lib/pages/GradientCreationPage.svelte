@@ -79,6 +79,7 @@
   <ColorSelector
     bind:currentColorHex
     on:click={addSelectedColor}
+    on:favoritesChange
     buttonText="Add Color"
     bind:savedColors
   />

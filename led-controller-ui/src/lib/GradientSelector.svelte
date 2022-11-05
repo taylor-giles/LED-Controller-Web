@@ -11,7 +11,7 @@
     export let chosenGradient = {};
 
     function deleteGradient(gradient) {
-        dispatch("delete", gradient);
+        dispatch("gradientDelete", gradient);
     }
 
     function selectGradient(gradient) {
