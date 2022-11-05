@@ -17,8 +17,8 @@
         ERROR: "Error Page",
     };
 
-    let savedColors = [];
-    let savedGradients = [];
+    let savedColors = undefined;
+    let savedGradients = undefined;
 
     let currentPage = deviceId ? PAGES.HOME : PAGES.LANDING;
     let currentEffectType;
@@ -51,8 +51,8 @@
         });
     }
 
-    $: if (deviceId) setColors(deviceId, savedColors);
-    $: if (deviceId) setGradients(deviceId, savedGradients);
+    $: if (deviceId && savedColors !== undefined) setColors(deviceId, savedColors);
+    $: if (deviceId && savedGradients !== undefined) setGradients(deviceId, savedGradients);
 
     function updateDisplay() {
         setDisplay(deviceId, {
