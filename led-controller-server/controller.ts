@@ -100,7 +100,7 @@ export async function generateNewDisplay(req: Request, res: Response) {
 
 export async function getGuest(req: Request, res: Response) {
     console.log(`[${Date.now()}] Guest device requested`);
-    Device.findOne({ guest: true }, null, null, (error, result) => {
+    Device.findOne({ isGuest: true }, null, null, (error, result) => {
         if (error) {
             res.status(500).json({ error: error, result: result });
         } else if (!result) {
