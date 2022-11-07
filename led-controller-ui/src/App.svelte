@@ -109,7 +109,7 @@
             bind:chosenGradient
             bind:chosenSpeed
             bind:chosenDirection
-            on:deleteGradient={onDeleteGradient}
+            on:gradientDelete={onDeleteGradient}
             on:brightnessChange={onBrightnessChange}
             on:newGradientClick={onNewGradientClick}
             on:setDisplay={updateDisplay}
