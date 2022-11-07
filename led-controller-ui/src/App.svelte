@@ -66,10 +66,16 @@
     }
 
     function onDeleteGradient(e) {
-        let gradient = e.detail;
-        savedGradients.splice(savedGradients.indexOf(gradient), 1);
-        savedGradients = savedGradients;
-        setGradients(deviceId, savedGradients);
+        let gradient = JSON.stringify(e.detail);
+        //Find the gradient in the list
+        for(let i = 0; i < savedGradients.length; i++){
+            if(gradient == JSON.stringify(savedGradients[i])){
+                savedGradients.splice(savedGradients.indexOf(gradient), 1);
+                savedGradients = savedGradients;
+                setGradients(deviceId, savedGradients);
+                break;
+            }
+        }
     }
 
     function onNewGradientClick(e) {
