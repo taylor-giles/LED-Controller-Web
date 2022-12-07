@@ -36,8 +36,9 @@
     if (deviceId) {
         getConfig(deviceId).then((config) => {
             if (!config) {
-                currentPage = PAGES.ERROR;
-                return;
+                //TODO: PUT THIS BACK
+                // currentPage = PAGES.ERROR;
+                // return;
             }
             savedColors = config.colors;
             savedGradients = config.gradients;
@@ -69,8 +70,8 @@
         let gradient = JSON.stringify(e.detail);
         //Find the gradient in the list
         for(let i = 0; i < savedGradients.length; i++){
-            if(gradient == JSON.stringify(savedGradients[i])){
-                savedGradients.splice(savedGradients.indexOf(gradient), 1);
+            if(gradient === JSON.stringify(savedGradients[i])){
+                savedGradients.splice(i, 1);
                 savedGradients = savedGradients;
                 setGradients(deviceId, savedGradients);
                 break;
