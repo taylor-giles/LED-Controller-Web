@@ -3,7 +3,7 @@
 	export let selectedHue = 0;
 
     let setVal = 0;
-    $: setVal = (selectedHue / 360);
+    $: setVal = (selectedHue / 360) % 1; //Mod 1 to avoid negative values
 </script>
 
 <div style="--selectedHue: {selectedHue};" class="slider">
