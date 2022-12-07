@@ -14,17 +14,17 @@
     export let shadow = "0px -10px 20px 0px black";
     export let border = "";
     export let showButton = true;
-    let displayWidth = showButton ? "auto" : "100%"
+    let displayWidth = showButton ? "auto" : "100%";
 
     let _currentColorHex = "";
     $: _currentColorHex = hslToHex(hue, 1, lightness);
     let isCurrentColorFavorited = false;
     $: isCurrentColorFavorited = savedColors.includes(_currentColorHex);
-    let contrastColor="#EEE";
-    $: if(hslRelativeLuminance(hue, 1, lightness) >= 0.5){
+    let contrastColor = "#EEE";
+    $: if (hslRelativeLuminance(hue, 1, lightness) >= 0.5) {
         contrastColor = "#222";
     } else {
-        contrastColor="#EEE"; 
+        contrastColor = "#EEE";
     }
 
     // Expose the hex value to the parent, but readonly
@@ -39,6 +39,11 @@
     }
     function onLightnessChange(event) {
         dispatch("lightnessChange", event.detail[1]);
+    }
+
+    //Resets the lightness slider back to 0.5
+    function resetLightness() {
+        lightness = 0.5;
     }
 
     //Favorite color
@@ -67,31 +72,47 @@
 <div style="--shadow: {shadow}; --border: {border}" id="main">
     <div id="main-container">
         <div
-            style="--hue: {hue}; --lightness: {`${lightness * 100}%`}; --contrast-color: {contrastColor}; --display-width: {displayWidth};"
+            style="--hue: {hue}; --lightness: {`${
+                lightness * 100
+            }%`}; --contrast-color: {contrastColor}; --display-width: {displayWidth};"
             id="main-color-display"
         >
             <div id="main-text">#{_currentColorHex}</div>
             <IconButton class="icon-button" on:click={onFavoriteClick}>
                 {#if isCurrentColorFavorited}
-                    <Star width="23px" height="23px" color={contrastColor}/>
+                    <Star width="23px" height="23px" color={contrastColor} />
                 {:else}
-                    <StarOutline width="23px" height="23px" color={contrastColor}/>
+                    <StarOutline
+                        width="23px"
+                        height="23px"
+                        color={contrastColor}
+                    />
                 {/if}
             </IconButton>
         </div>
-        
+
         {#if showButton}
             <button class="button" on:click>{buttonText}</button>
         {/if}
     </div>
     <div id="slider-container">
         <HueSlider on:change={onHueChange} bind:selectedHue={hue} />
-        <LightnessSlider
-            on:change={onLightnessChange}
-            bind:selectedLightness={lightness}
-            bind:hue
-            min={0.5}
-        />
+        <div id="lightness-container">
+            <div id="lightness-slider">
+                <LightnessSlider
+                    on:change={onLightnessChange}
+                    bind:selectedLightness={lightness}
+                    bind:hue
+                />
+            </div>
+            <button
+                id="lightness-reset"
+                class="button"
+                on:click={resetLightness}
+            >
+                Reset
+            </button>
+        </div>
     </div>
     <div id="saved-colors-bg">
         <div id="saved-colors-label">SAVED COLORS</div>
@@ -153,6 +174,19 @@
     #slider-container {
         text-align: center;
         width: 100%;
+    }
+    #lightness-container {
+        display: flex;
+        align-items: center;
+    }
+    #lightness-slider {
+        flex: 1;
+    }
+    #lightness-reset {
+        height: max-content;
+        margin-right: 22px;
+        margin-left: -5px;
+        margin-bottom: 2px;
     }
     #saved-colors-bg {
         background-color: #bababa;
