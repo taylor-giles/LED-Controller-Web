@@ -187,6 +187,9 @@
         margin-right: 22px;
         margin-left: -5px;
         margin-bottom: 2px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        font-size: 11pt;
     }
     #saved-colors-bg {
         background-color: #bababa;
