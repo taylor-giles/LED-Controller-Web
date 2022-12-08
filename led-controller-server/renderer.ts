@@ -1,11 +1,11 @@
 import { hexToRgb, linearlyInterpolate } from "../utils";
 import { Device, DisplayType, IDisplay } from "./schemas";
 
-const FRAMES_PER_SECOND: number = 30;
+export const FRAMES_PER_SECOND: number = 30;
 const MIN_DURATION = 2; //The duration of the quickest display. Max duration will be 100sec * MIN_DURATION
 
-//The maximum number of frames that the lights should be OFF during strobe. Set to 2sec.
-const MAX_STROBE_FRAMES_OFF = FRAMES_PER_SECOND * 2;
+//The maximum number of frames to show each color during strobe. Set to 2sec.
+const MAX_STROBE_SEGMENT_LENGTH = FRAMES_PER_SECOND * 2;
 
 //Frames are of the format [r,g,b,r,g,b,r,g,b,...] where each set of 3 (r,g,b) is a pixel value
 interface IActiveDisplay {
@@ -186,7 +186,7 @@ export default class Renderer {
 
         function calcStrobeFrames() {
             //Determine the segment length
-            let segLen = Math.round((1 - (display.speed / 100)) * MAX_STROBE_FRAMES_OFF + 1)
+            let segLen = Math.round((1 - (display.speed / 100)) * MAX_STROBE_SEGMENT_LENGTH + 1)
 
             //Get the gradient colors
             let gradientColors = display.gradient.colors.map((c) => hexToRgb(c)).map((c) => { return { r: c[0], g: c[1], b: c[2] } })
@@ -199,17 +199,6 @@ export default class Renderer {
                         frame.push(color.r * brightnessRatio);
                         frame.push(color.g * brightnessRatio);
                         frame.push(color.b * brightnessRatio);
-                    }
-                    output.push(frame);
-                }
-
-                //OFF ("black") frames
-                for (let i = 0; i < segLen; i++) {
-                    let frame: number[] = []
-                    for (let pixelIndex = 0; pixelIndex < numPixels; pixelIndex++) {
-                        frame.push(0);
-                        frame.push(0);
-                        frame.push(0);
                     }
                     output.push(frame);
                 }

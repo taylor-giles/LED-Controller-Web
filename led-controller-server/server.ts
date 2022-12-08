@@ -3,7 +3,7 @@ import { RawData, WebSocketServer } from 'ws';
 import router from './router';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import Renderer from './renderer';
+import Renderer, { FRAMES_PER_SECOND } from './renderer';
 dotenv.config();
 
 const app = express();
@@ -26,13 +26,16 @@ db.on('error', console.error.bind(console, "MongoDB connection error:"))
 
 // Websocket
 export const renderer = new Renderer();
-
 const wsServer = new WebSocketServer({ port: 8080 });
 
 wsServer.on('connection', (ws) => {
-    ws.on('message', function message(data: RawData) {
+    ws.on('message', async function message(data: RawData) {
         //The only message we should ever receive from the client is their display ID
         let displayId = data.toString();
-        renderer.getNextFrame(displayId).then((result) => ws.send(result));
+
+        //Send one second of frames
+        for(let i = 0; i < FRAMES_PER_SECOND; i++){
+            renderer.getNextFrame(displayId).then((result) => ws.send(result));
+        }
     })
 });

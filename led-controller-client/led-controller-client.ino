@@ -1,62 +1,69 @@
-//Tutorial https://www.mischianti.org/2020/12/07/websocket-on-arduino-esp8266-and-esp32-client-1/ 
+//WS Tutorial https://www.mischianti.org/2020/12/07/websocket-on-arduino-esp8266-and-esp32-client-1/ 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <FastLED.h>
 
 //Requires WebSockets library by Markus Sattler
 #include <WebSocketsClient.h>
- 
-WebSocketsClient webSocket;
 
 #define ONBOARD_LED 2
-#define FRAMES_PER_SECOND = 30
 
 //WiFi/WS connection vars
-const char *ssid     = "[SSID]";
-const char *password = "[PASS]";
-const char* WS_HOST = "[HOST]";
-const int   WS_PORT = 80;
-const char* WS_PATH = "[PATH]";
-const char* DISPLAY_ID = "[ID]";
+WebSocketsClient webSocket;
+const char *ssid     = "SSID";  //REPLACE WITH YOUR SSID
+const char *password = "PASS";  //REPLACE WITH YOUR WIFI PASS
+const char* WS_HOST = "HOST";   //REPLACE WITH YOUR WS HOST
+const int   WS_PORT = 80;       //REPLACE WITH YOUR WS PORT
+const char* WS_PATH = "PATH";   //REPLACE WITH YOUR WS PATH
+const char* DISPLAY_ID = "ID";  //REPLACE WITH YOUR DEVICE ID
 bool connected = false;
+
+//Display vars
+const int NUM_LIGHTS = 1000;    //REPLACE WITH YOUR NUMBER OF LIGHTS
+const int FRAMES_PER_SECOND = 30;
+const int FRAMES_TO_BUFFER = FRAMES_PER_SECOND;
+const int millisBtwnFrames = 1000 / FRAMES_PER_SECOND;
+int numBufferedFrames = 0;
+long timeOfLastFrame = 0;
 
 //FastLED vars
 #define DATA_PIN    12
 #define LED_TYPE    WS2812
 #define COLOR_ORDER GRB
-#define FRAMES_PER_SECOND  120
-CRGB* leds;
-
-//Display vars
-long millisOfLastFrame = 0;
-int numLights = 588;
-int millisBtwnFrames = 1000 / FRAMES_PER_SECOND;
+CRGB leds[NUM_LIGHTS];
  
 #define DEBUG_SERIAL Serial
  
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
-    int lengthOfFrame = numLights;
+    int lengthOfFrame = NUM_LIGHTS;
     int numBytesRead = 0;
     switch(type) {
         case WStype_DISCONNECTED:
             DEBUG_SERIAL.printf("[WSC] Disconnected!\n");
+            numBufferedFrames = 0;
             connected = false;
             break;
         case WStype_CONNECTED: 
             DEBUG_SERIAL.printf("[WSC] Connected to url: %s\n", payload);
             connected = true;
- 
+            
             //Flash lights (LEDs and onboard LED)
             digitalWrite(ONBOARD_LED, HIGH);
-            fill_solid(leds, numLights, CRGB::Red);
+            FastLED.clear();
             FastLED.show();
-            delay(300);
-            fill_solid(leds, numLights, CRGB::Green);
+            delay(100);
+            fill_solid(leds, NUM_LIGHTS, CRGB::White);
             FastLED.show();
-            delay(300);
-            fill_solid(leds, numLights, CRGB::Blue);
+            delay(100);
+            fill_solid(leds, NUM_LIGHTS, CRGB::Red);
             FastLED.show();
-            delay(300);
+            delay(100);
+            fill_solid(leds, NUM_LIGHTS, CRGB::Green);
+            FastLED.show();
+            delay(100);
+            fill_solid(leds, NUM_LIGHTS, CRGB::Blue);
+            FastLED.show();
+            delay(100);
             digitalWrite(ONBOARD_LED, LOW);
             FastLED.clear();
             FastLED.show();
@@ -67,10 +74,15 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
             break;
             
         case WStype_BIN:
-            DEBUG_SERIAL.printf("[WSc] get binary length: %u\n", length);
+            //Wait until it is time to display the next frame
+            while((millis() - timeOfLastFrame) < millisBtwnFrames);
+            timeOfLastFrame = millis();
 
+            //Decrement the counter
+            numBufferedFrames--;
+            
             //Read in the frame
-            if(length/3 < numLights){
+            if(length/3 > NUM_LIGHTS){
               lengthOfFrame = length/3;
             }
             for(int i = 0; i < lengthOfFrame; i++){
@@ -78,11 +90,13 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
               leds[i].g = payload[numBytesRead++];
               leds[i].b = payload[numBytesRead++];
             }
-            
+
+            //Display the frame
+            FastLED.show();
             break;
             
         case WStype_PING:
-            // pong will be send automatically
+            // pong will be sent automatically
             //DEBUG_SERIAL.printf("[WSc] get ping\n");
             break;
             
@@ -112,12 +126,9 @@ void setup() {
       Serial.print(".");
     }
     DEBUG_SERIAL.print("Local IP: "); DEBUG_SERIAL.println(WiFi.localIP());
-
-    //Allocate space for leds
-    leds = (CRGB*)calloc(numLights, sizeof(CRGB));
   
     //Tell FastLED about the LED strip configuration
-    FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, numLights).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LIGHTS).setCorrection(TypicalLEDStrip);
     delay(50);
 
     //Set up web socket connection
@@ -127,13 +138,14 @@ void setup() {
  
 void loop() {
     webSocket.loop();
+    
+    //Onboard LED (WS connection status light)
     if(connected){
-      digitalWrite(ONBOARD_LED, HIGH);
-      //If the time to display the next frame has come, display it
-      if(millis() - millisOfLastFrame >= millisBtwnFrames){
-          FastLED.show();
-          webSocket.sendTXT(DISPLAY_ID);
+      if(numBufferedFrames < FRAMES_TO_BUFFER/2){
+        webSocket.sendTXT(DISPLAY_ID);
+        numBufferedFrames += FRAMES_TO_BUFFER;
       }
+      digitalWrite(ONBOARD_LED, HIGH);
     } else {
       digitalWrite(ONBOARD_LED, LOW);
     }
