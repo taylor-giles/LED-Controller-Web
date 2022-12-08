@@ -10,16 +10,17 @@
 
 //WiFi/WS connection vars
 WebSocketsClient webSocket;
-const char *ssid     = "SSID";  //REPLACE WITH YOUR SSID
-const char *password = "PASS";  //REPLACE WITH YOUR WIFI PASS
-const char* WS_HOST = "HOST";   //REPLACE WITH YOUR WS HOST
-const int   WS_PORT = 80;       //REPLACE WITH YOUR WS PORT
-const char* WS_PATH = "PATH";   //REPLACE WITH YOUR WS PATH
-const char* DISPLAY_ID = "ID";  //REPLACE WITH YOUR DEVICE ID
+const char *ssid     = "SSID";                   //REPLACE WITH YOUR SSID
+const char *password = "PASS";                   //REPLACE WITH YOUR WIFI PASS
+const char* WS_HOST = "lights.taylorgiles.me";   //REPLACE WITH YOUR WS HOST
+const int   WS_PORT = 80;                        //REPLACE WITH YOUR WS PORT
+const char* WS_PATH = "/ws";                     //REPLACE WITH YOUR WS PATH
+const char* DISPLAY_ID = "ID";                   //REPLACE WITH YOUR DEVICE ID
 bool connected = false;
 
 //Display vars
-const int NUM_LIGHTS = 1000;    //REPLACE WITH YOUR NUMBER OF LIGHTS
+const int NUM_LIGHTS = 1000;      //REPLACE WITH YOUR NUMBER OF LIGHTS
+const float MAX_BRIGHTNESS = 0.5; //REPLACE WITH YOUR DESIRED MAX BRIGHTNESS LEVEL [0-1]
 const int FRAMES_PER_SECOND = 30;
 const int FRAMES_TO_BUFFER = FRAMES_PER_SECOND;
 const int millisBtwnFrames = 1000 / FRAMES_PER_SECOND;
@@ -86,9 +87,9 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
               lengthOfFrame = length/3;
             }
             for(int i = 0; i < lengthOfFrame; i++){
-              leds[i].r = payload[numBytesRead++];
-              leds[i].g = payload[numBytesRead++];
-              leds[i].b = payload[numBytesRead++];
+              leds[i].r = payload[numBytesRead++] * MAX_BRIGHTNESS;
+              leds[i].g = payload[numBytesRead++] * MAX_BRIGHTNESS;
+              leds[i].b = payload[numBytesRead++] * MAX_BRIGHTNESS;
             }
 
             //Display the frame
