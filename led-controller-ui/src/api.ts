@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { IDevice, IDisplay, IGradient } from '../../../../../../../../home/taylor/Documents/Projects/LED-Controller-Web/led-controller-server/schemas';
+import type { IDevice, IDisplay, IGradient } from '../../led-controller-server/schemas';
 
 const apiCaller = axios.create({
     baseURL: "https://lights.taylorgiles.me/api",
